@@ -21,7 +21,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -40,6 +39,7 @@ fun ProfileScreen(
     usuario: FirebaseUser,
     viewModel: ProfileViewModel,
     onCerrarSesion: () -> Unit,
+    onIrAEditarPerfil: () -> Unit = {},
     onVerCatalogo: () -> Unit = {},
     onIrACapacitaciones: () -> Unit = {},
     onIrAAdminConsultoras: () -> Unit = {},
@@ -49,173 +49,122 @@ fun ProfileScreen(
     onIrADevolucion: () -> Unit = {}
 ) {
     val context = LocalContext.current
-    var nombre by remember { mutableStateOf("") }
-    var preferencias by remember { mutableStateOf("") }
-    var fotoNueva by remember { mutableStateOf<Bitmap?>(null) }
     val estado by viewModel.uiState.collectAsState()
     val perfilCargado by viewModel.perfil.collectAsState()
+    val estadisticas by viewModel.estadisticas.collectAsState()
 
     LaunchedEffect(usuario.uid) {
-        nombre = ""
-        preferencias = ""
-        fotoNueva = null
         viewModel.cargarPerfil(usuario.uid)
         viewModel.cargarEstadisticas()
         viewModel.registrarTokenFcm()
         viewModel.programarRecordatorioPedidos(context)
     }
 
-    val estadisticas by viewModel.estadisticas.collectAsState()
-
-    val lanzadorPermisoNotificaciones = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { }
-
-    LaunchedEffect(Unit) {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            val concedido = ContextCompat.checkSelfPermission(
-                context, Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED
-            if (!concedido) lanzadorPermisoNotificaciones.launch(Manifest.permission.POST_NOTIFICATIONS)
-        }
-    }
-
-    LaunchedEffect(perfilCargado) {
-        perfilCargado?.let { perfil ->
-            nombre = perfil.nombre
-            preferencias = perfil.preferencias
-        }
-    }
+    val esAdmin = remember(usuario.email) { AdminConfig.esAdmin(usuario.email) }
 
     val fotoGuardada = remember(perfilCargado) {
         perfilCargado?.fotoBase64?.takeIf { it.isNotBlank() }?.let { base64ABitmap(it) }
     }
 
-    val esAdmin = remember(usuario.email) { AdminConfig.esAdmin(usuario.email) }
-
-    val lanzadorCamara = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.TakePicturePreview()
-    ) { bitmap -> fotoNueva = bitmap }
-
-    val lanzadorPermisoCamara = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { concedido -> if (concedido) lanzadorCamara.launch(null) }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
-                        MaterialTheme.colorScheme.background
-                    )
-                )
-            )
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.Start
         ) {
             Spacer(modifier = Modifier.height(60.dp))
 
-            Box(contentAlignment = Alignment.BottomCenter) {
+            // Header Minimalista Asimétrico
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
+            ) {
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(120.dp)
-                        .clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp))
-                        .background(MaterialTheme.colorScheme.primary)
-                )
-
-                Box(
-                    modifier = Modifier
-                        .size(130.dp)
+                        .size(100.dp)
                         .clip(CircleShape)
-                        .background(Color.White)
-                        .border(4.dp, Color.White, CircleShape)
-                        .clickable {
-                            val permisoOk = ContextCompat.checkSelfPermission(
-                                context, Manifest.permission.CAMERA
-                            ) == PackageManager.PERMISSION_GRANTED
-                            if (permisoOk) {
-                                lanzadorCamara.launch(null)
-                            } else {
-                                lanzadorPermisoCamara.launch(Manifest.permission.CAMERA)
-                            }
-                        },
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .border(2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    val fotoAMostrar = fotoNueva ?: fotoGuardada
-                    if (fotoAMostrar != null) {
+                    if (fotoGuardada != null) {
                         Image(
-                            bitmap = fotoAMostrar.asImageBitmap(),
+                            bitmap = fotoGuardada.asImageBitmap(),
                             contentDescription = "Foto de perfil",
-                            modifier = Modifier.fillMaxSize().clip(CircleShape)
+                            modifier = Modifier.fillMaxSize().clip(CircleShape),
+                            contentScale = androidx.compose.ui.layout.ContentScale.Crop
                         )
                     } else {
                         Icon(
                             imageVector = Icons.Default.Person,
                             contentDescription = null,
-                            modifier = Modifier.size(64.dp),
+                            modifier = Modifier.size(48.dp),
                             tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(20.dp))
+
+                Column {
+                    Text(
+                        text = if (perfilCargado?.nombre.isNullOrBlank()) "Consultora" else perfilCargado?.nombre ?: "",
+                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold),
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Text(
+                        text = usuario.email ?: "",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Surface(
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            when {
+                                esAdmin -> "Administrador ⭐"
+                                perfilCargado?.activo == false -> "Inactiva"
+                                else -> "Consultora activa"
+                            },
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = if (nombre.isBlank()) "Consultora" else nombre,
-                style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Text(
-                text = usuario.email ?: "",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-            Surface(
-                color = MaterialTheme.colorScheme.primaryContainer,
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Text(
-                    when {
-                       esAdmin -> "Administrador ⭐"
-                       perfilCargado?.activo == false -> "Inactiva"
-                       else -> "Consultora activa"
-                   },
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-
             Spacer(modifier = Modifier.height(32.dp))
 
+            // Stats Section (Flat Design)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                StatCard(
+                FlatStatItem(
                     modifier = Modifier.weight(1f),
                     label = "Ventas",
                     value = if (estadisticas.cargando) "..." else "S/ ${"%.2f".format(estadisticas.ventasTotales)}",
                     icon = Icons.Default.AttachMoney
                 )
-                StatCard(
+                FlatStatItem(
                     modifier = Modifier.weight(1f),
                     label = "Pedidos",
                     value = if (estadisticas.cargando) "..." else "${estadisticas.totalPedidos}",
                     icon = Icons.Default.List
                 )
-                StatCard(
+                FlatStatItem(
                     modifier = Modifier.weight(1f),
                     label = "Entregados",
                     value = if (estadisticas.cargando) "..." else "${estadisticas.pedidosEntregados}",
@@ -225,85 +174,46 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.9f)),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            // Botón Editar Perfil
+            OutlinedButton(
+                onClick = onIrAEditarPerfil,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                shape = RoundedCornerShape(16.dp),
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
             ) {
-                Column(modifier = Modifier.padding(20.dp)) {
-                    Text(
-                        "Información Personal",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-                    OutlinedTextField(
-                        value = nombre,
-                        onValueChange = { nombre = it },
-                        label = { Text("Nombre completo") },
-                        singleLine = true,
-                        shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    OutlinedTextField(
-                        value = preferencias,
-                        onValueChange = { preferencias = it },
-                        label = { Text("Preferencias") },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp)
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Button(
-                        onClick = {
-                            val fotoParaGuardar = fotoNueva?.let { bitmapABase64(it) } ?: perfilCargado?.fotoBase64 ?: ""
-                            viewModel.guardarPerfil(
-                                context = context,
-                                uid = usuario.uid,
-                                email = usuario.email ?: "",
-                                nombre = nombre,
-                                preferencias = preferencias,
-                                fotoBase64 = fotoParaGuardar
-                            )
-                        },
-                        enabled = estado !is ProfileUiState.Guardando && nombre.isNotBlank(),
-                        modifier = Modifier.fillMaxWidth().height(50.dp),
-                        shape = RoundedCornerShape(25.dp)
-                    ) {
-                        if (estado is ProfileUiState.Guardando) {
-                            CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White)
-                        } else {
-                            Text("Actualizar Perfil", fontWeight = FontWeight.Bold)
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                "Gestión",
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
-            )
-
-            ProfileActionItem("Ver Catálogo", Icons.Default.ShoppingCart, onVerCatalogo)
-            ProfileActionItem("Mis Pedidos", Icons.Default.List, onIrAPedidos)
-            ProfileActionItem("Reparto", Icons.Default.LocalShipping, onIrAReparto)
-            ProfileActionItem("Capacitaciones", Icons.Default.School, onIrACapacitaciones)
-            ProfileActionItem("Registrar Devolución", Icons.Default.AssignmentReturn, onIrADevolucion)
-
-            if (esAdmin) {
-                ProfileActionItem("Agregar Producto", Icons.Default.AddShoppingCart, onIrAAgregarProducto)
-                ProfileActionItem("Admin Panel", Icons.Default.Settings, onIrAAdminConsultoras)
+                Icon(Icons.Default.Edit, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Editar Perfil", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
             }
 
             Spacer(modifier = Modifier.height(32.dp))
 
+            // Soporte y Ajustes (Sustituye a Gestión)
+            Text(
+                "Soporte y Ajustes",
+                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
+            )
+
+            ProfileActionItem(
+                label = "Centro de Ayuda",
+                icon = Icons.Default.Help,
+                onClick = { /* Implementar ayuda */ }
+            )
+            ProfileActionItem(
+                label = "Términos y Condiciones",
+                icon = Icons.Default.Description,
+                onClick = { /* Implementar términos */ }
+            )
+
+            Spacer(modifier = Modifier.height(40.dp))
+
             OutlinedButton(
                 onClick = onCerrarSesion,
                 modifier = Modifier.fillMaxWidth().height(50.dp),
-                shape = RoundedCornerShape(25.dp),
+                shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
             ) {
                 Icon(Icons.Default.ExitToApp, contentDescription = null)
@@ -313,6 +223,7 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(40.dp))
 
+            // Feedback de guardado
             when (val actual = estado) {
                 is ProfileUiState.Guardado -> {
                     Text(actual.mensaje, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
@@ -327,20 +238,19 @@ fun ProfileScreen(
 }
 
 @Composable
-fun StatCard(modifier: Modifier = Modifier, label: String, value: String, icon: androidx.compose.ui.graphics.vector.ImageVector) {
-    Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+fun FlatStatItem(modifier: Modifier = Modifier, label: String, value: String, icon: androidx.compose.ui.graphics.vector.ImageVector) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f))
+            .padding(12.dp),
+        contentAlignment = Alignment.Center
     ) {
         Column(
-            modifier = Modifier.padding(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
-            Spacer(
-                modifier = Modifier.height(4.dp)
-            )
+            Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+            Spacer(modifier = Modifier.height(4.dp))
             Text(value, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
             Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
         }
@@ -354,7 +264,7 @@ fun ProfileActionItem(label: String, icon: androidx.compose.ui.graphics.vector.I
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
             .clickable { onClick() }
-            .background(Color.White.copy(alpha = 0.6f))
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

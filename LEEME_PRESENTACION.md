@@ -55,7 +55,7 @@ Sin los pasos 5 y 6, el registro y el guardado de perfil van a fallar aunque el 
 1. **`AuthRepository.kt`** — *"Aquí está toda la lógica de autenticación separada de la pantalla: registrar, iniciar sesión, recuperar contraseña. Cada función llama al SDK de Firebase Auth y devuelve éxito o error."* (Señala `registrar()`: crea el usuario y manda la verificación en la misma función).
 2. **`AuthViewModel.kt`** — *"Este es el ViewModel del patrón MVVM: la pantalla (Compose) nunca habla directo con Firebase, solo observa este estado (`uiState`) y llama a estas funciones. Así separamos la interfaz de la lógica."*
 3. **`ProfileViewModel.kt`**, función `guardarPerfil` — *"Guarda el perfil en Firestore y, si sale bien, encola el `ProfileSyncWorker` con WorkManager para la sincronización en segundo plano."*
-
+   
 **Si preguntan "¿por qué así?":** MVVM separa responsabilidades (pantalla / lógica / datos) — es el patrón pedido en el backlog para todo el proyecto, no solo esta historia.
 
 ---

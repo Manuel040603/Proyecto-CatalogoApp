@@ -27,6 +27,7 @@ import com.catalogoapp.consultoras.ui.screens.main.MainScreen
 import com.catalogoapp.consultoras.ui.screens.pedido.NuevoPedidoScreen
 import com.catalogoapp.consultoras.ui.screens.pedido.PedidoListScreen
 import com.catalogoapp.consultoras.ui.screens.profile.ProfileScreen
+import com.catalogoapp.consultoras.ui.screens.profile.EditProfileScreen
 import com.catalogoapp.consultoras.ui.screens.reparto.CrearRepartoScreen
 import com.catalogoapp.consultoras.ui.screens.reparto.ListaRepartosScreen
 import com.catalogoapp.consultoras.ui.screens.reparto.RepartoDetalleScreen
@@ -39,6 +40,8 @@ object Rutas {
     const val RECUPERAR = "recuperar"
     const val HOME = "home"
     const val PERFIL = "perfil"
+    const val EDITAR_PERFIL = "editar_perfil"
+
     const val CATALOGO = "catalogo"
     const val DEVOLUCION = "devolucion"
     const val CAPACITACIONES = "capacitaciones"
@@ -133,6 +136,7 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
                                 popUpTo(0)
                             }
                         },
+                        onIrAEditarPerfil = { navController.navigate(Rutas.EDITAR_PERFIL) },
                         onVerCatalogo = { navController.navigate(Rutas.CATALOGO) },
                         onIrACapacitaciones = { navController.navigate(Rutas.CAPACITACIONES) },
                         onIrAAdminConsultoras = { navController.navigate(Rutas.ADMIN_CONSULTORAS) },
@@ -142,6 +146,21 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
                         onIrADevolucion = { navController.navigate(Rutas.DEVOLUCION) }
                     )
                 }
+            }
+        }
+
+        composable(Rutas.EDITAR_PERFIL) {
+            val usuario = authViewModel.usuarioActual
+            if (usuario != null) {
+                PantallaConEspacioSuperior {
+                    EditProfileScreen(
+                        usuario = usuario,
+                        viewModel = profileViewModel,
+                        onVolver = { navController.popBackStack() }
+                    )
+                }
+            } else {
+                navController.navigate(Rutas.LOGIN)
             }
         }
 
