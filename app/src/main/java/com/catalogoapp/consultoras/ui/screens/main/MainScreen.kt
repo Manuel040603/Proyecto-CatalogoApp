@@ -45,7 +45,7 @@ fun MainScreen(
                 )
                 NavigationBarItem(
                     selected = currentRoute == Rutas.CATALOGO,
-                    onClick = { navController.navigate(Rutas.CATALOGO) },
+                    onClick = { navController.navigate(Rutas.CATALOGO) { launchSingleTop = true } },
                     icon = { Icon(Icons.Default.ShoppingCart, contentDescription = "Catálogo") },
                     label = { Text("Catálogo") },
                     colors = NavigationBarItemDefaults.colors(
@@ -57,7 +57,7 @@ fun MainScreen(
                 )
                 NavigationBarItem(
                     selected = currentRoute == Rutas.PEDIDOS,
-                    onClick = { navController.navigate(Rutas.PEDIDOS) },
+                    onClick = { navController.navigate(Rutas.PEDIDOS) { launchSingleTop = true } },
                     icon = { Icon(Icons.Default.ListAlt, contentDescription = "Pedidos") },
                     label = { Text("Pedidos") },
                     colors = NavigationBarItemDefaults.colors(
@@ -69,7 +69,7 @@ fun MainScreen(
                 )
                 NavigationBarItem(
                     selected = currentRoute == Rutas.PERFIL,
-                    onClick = { navController.navigate(Rutas.PERFIL) },
+                    onClick = { navController.navigate(Rutas.PERFIL) { launchSingleTop = true } },
                     icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
                     label = { Text("Perfil") },
                     colors = NavigationBarItemDefaults.colors(

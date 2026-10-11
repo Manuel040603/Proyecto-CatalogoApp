@@ -11,6 +11,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -230,7 +231,7 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
         }
 
         composable(Rutas.AGREGAR_PRODUCTO) {
-            val agregarProductoViewModel = remember { AgregarProductoViewModel() }
+            val agregarProductoViewModel = viewModel<AgregarProductoViewModel>()
             PantallaConEspacioSuperior {
                 AgregarProductoScreen(
                     viewModel = agregarProductoViewModel,
@@ -307,7 +308,7 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
         }
 
         composable(Rutas.CATALOGO) {
-            val catalogoViewModel = remember { CatalogoViewModel() }
+            val catalogoViewModel = viewModel<CatalogoViewModel>()
             MainScreen(navController = navController) {
                 CatalogoScreen(
                     viewModel = catalogoViewModel,
@@ -324,7 +325,7 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
             arguments = listOf(navArgument("productoId") { type = NavType.StringType })
         ) { backStackEntry ->
             val productoId = backStackEntry.arguments?.getString("productoId") ?: ""
-            val catalogoViewModel = remember { CatalogoViewModel() }
+            val catalogoViewModel = viewModel<CatalogoViewModel>()
             // Obtenemos el producto por ID desde el ViewModel
             val producto = remember(productoId) {
                 catalogoViewModel.obtenerProductoPorId(productoId)
@@ -354,7 +355,7 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
             arguments = listOf(navArgument("pedidoId") { type = NavType.StringType })
         ) { backStackEntry ->
             val pedidoId = backStackEntry.arguments?.getString("pedidoId")?.toIntOrNull() ?: 0
-            val seguimientoViewModel = remember { SeguimientoViewModel() }
+            val seguimientoViewModel = viewModel<SeguimientoViewModel>()
             val estadoPedidos by pedidoViewModel.uiState.collectAsState()
             LaunchedEffect(pedidoId) {
                 if (estadoPedidos.pedidos.none { it.id == pedidoId }) {
@@ -374,7 +375,7 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
         }
 
         composable(Rutas.DEVOLUCION) {
-            val devolucionViewModel = remember { DevolucionViewModel() }
+            val devolucionViewModel = viewModel<DevolucionViewModel>()
             PantallaConEspacioSuperior {
                 DevolucionScreen(
                     viewModel = devolucionViewModel,
@@ -384,7 +385,7 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
         }
 
         composable(Rutas.CAPACITACIONES) {
-            val capacitacionViewModel = remember { CapacitacionViewModel() }
+            val capacitacionViewModel = viewModel<CapacitacionViewModel>()
             val administradoresActuales by AdminConfig.administradores.collectAsState()
             val esAdmin = remember(administradoresActuales) { AdminConfig.esAdmin(authViewModel.usuarioActual?.email) }
             MainScreen(navController = navController) {
@@ -399,7 +400,7 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
         }
 
         composable(Rutas.NUEVA_CAPACITACION) {
-            val nuevaCapacitacionViewModel = remember { NuevaCapacitacionViewModel() }
+            val nuevaCapacitacionViewModel = viewModel<NuevaCapacitacionViewModel>()
             PantallaConEspacioSuperior {
                 NuevaCapacitacionScreen(
                     viewModel = nuevaCapacitacionViewModel,
@@ -414,7 +415,7 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
         ) { backStackEntry ->
             val capacitacionId = backStackEntry.arguments?.getString("capacitacionId") ?: ""
             val uid = authViewModel.usuarioActual?.uid ?: ""
-            val capacitacionDetalleViewModel = remember { CapacitacionDetalleViewModel() }
+            val capacitacionDetalleViewModel = viewModel<CapacitacionDetalleViewModel>()
             PantallaConEspacioSuperior {
                 CapacitacionDetalleScreen(
                     capacitacionId = capacitacionId,
@@ -426,7 +427,7 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
         }
 
         composable(Rutas.ADMIN_PRODUCTOS) {
-            val adminProductosViewModel = remember { AdminProductosViewModel() }
+            val adminProductosViewModel = viewModel<AdminProductosViewModel>()
             PantallaConEspacioSuperior {
                 AdminProductosScreen(
                     viewModel = adminProductosViewModel,
@@ -437,7 +438,7 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
         }
 
         composable(Rutas.ADMIN_PEDIDOS) {
-            val adminPedidosViewModel = remember { AdminPedidosViewModel() }
+            val adminPedidosViewModel = viewModel<AdminPedidosViewModel>()
             PantallaConEspacioSuperior {
                 AdminPedidosScreen(
                     viewModel = adminPedidosViewModel,
@@ -447,7 +448,7 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
         }
 
         composable(Rutas.COMISIONES) {
-            val comisionesViewModel = remember { ComisionesViewModel() }
+            val comisionesViewModel = viewModel<ComisionesViewModel>()
             PantallaConEspacioSuperior {
                 ComisionesScreen(
                     viewModel = comisionesViewModel,
@@ -457,7 +458,7 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
         }
 
         composable(Rutas.ADMIN_CONSULTORAS) {
-            val adminConsultorasViewModel = remember { AdminConsultorasViewModel() }
+            val adminConsultorasViewModel = viewModel<AdminConsultorasViewModel>()
             PantallaConEspacioSuperior {
                 AdminConsultorasScreen(
                     viewModel = adminConsultorasViewModel,
