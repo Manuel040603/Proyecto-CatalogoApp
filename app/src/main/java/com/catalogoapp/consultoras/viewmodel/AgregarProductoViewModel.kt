@@ -28,7 +28,8 @@ class AgregarProductoViewModel(
         precio: Double,
         descripcion: String,
         stock: Int,
-        imagenBase64: String
+        imagenBase64: String,
+        comision: Double = 0.0
     ) {
         _uiState.value = AgregarProductoUiState.Guardando
         viewModelScope.launch {
@@ -38,12 +39,13 @@ class AgregarProductoViewModel(
                 precio = precio,
                 descripcion = descripcion,
                 stock = stock,
-                imagenUrl = imagenBase64
+                imagenUrl = imagenBase64,
+                comision = comision
             )
             val resultado = repository.agregarProducto(producto)
             _uiState.value = resultado.fold(
                 onSuccess = { AgregarProductoUiState.Guardado("Producto agregado correctamente") },
-                onFailure = { AgregarProductoUiState.Error(it.message ?: "No se pudo agregar el producto") }
+                onFailure = { AgregarProductoUiState.Error(com.catalogoapp.consultoras.util.MensajeError.de(it, "No se pudo agregar el producto")) }
             )
         }
     }

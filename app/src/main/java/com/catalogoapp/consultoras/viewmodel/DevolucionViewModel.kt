@@ -3,8 +3,13 @@ package com.catalogoapp.consultoras.viewmodel
 import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.catalogoapp.consultoras.data.model.Devolucion
 import com.catalogoapp.consultoras.data.model.Producto
+import com.catalogoapp.consultoras.data.repository.DevolucionRepository
 import com.catalogoapp.consultoras.data.repository.ProductRepository
+import com.catalogoapp.consultoras.util.AdminConfig
+import com.catalogoapp.consultoras.util.MensajeError
+import com.google.firebase.auth.FirebaseAuth
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.label.ImageLabeling
 import com.google.mlkit.vision.label.defaults.ImageLabelerOptions
@@ -24,11 +29,16 @@ data class DevolucionUiState(
     val confianza: Float? = null,
     val actualizando: Boolean = false,
     val mensaje: String? = null,
-    val error: String? = null
+    val error: String? = null,
+    val historial: List<Devolucion> = emptyList(),
+    val cargandoHistorial: Boolean = true,
+    val historialDeTodas: Boolean = false,
+    val avisoHistorial: String? = null
 )
 
 class DevolucionViewModel @JvmOverloads constructor(
-    private val repository: ProductRepository = ProductRepository()
+    private val repository: ProductRepository = ProductRepository(),
+    private val devolucionRepository: DevolucionRepository = DevolucionRepository()
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DevolucionUiState())
@@ -41,6 +51,37 @@ class DevolucionViewModel @JvmOverloads constructor(
                 .collect { productos ->
                     _uiState.value = _uiState.value.copy(productos = productos)
                 }
+        }
+        cargarHistorial()
+    }
+
+    fun cargarHistorial() {
+        val usuario = FirebaseAuth.getInstance().currentUser
+        if (usuario == null) {
+            _uiState.value = _uiState.value.copy(cargandoHistorial = false, historial = emptyList())
+            return
+        }
+        _uiState.value = _uiState.value.copy(cargandoHistorial = true)
+        viewModelScope.launch {
+            AdminConfig.cargarRol(usuario.email)
+            val esAdmin = AdminConfig.esAdmin(usuario.email)
+            _uiState.value = _uiState.value.copy(historialDeTodas = esAdmin)
+            val resultado = if (esAdmin) {
+                devolucionRepository.obtenerTodas()
+            } else {
+                devolucionRepository.obtenerDeConsultora(usuario.uid)
+            }
+            _uiState.value = resultado.fold(
+                onSuccess = { lista ->
+                    _uiState.value.copy(cargandoHistorial = false, historial = lista, avisoHistorial = null)
+                },
+                onFailure = {
+                    _uiState.value.copy(
+                        cargandoHistorial = false,
+                        avisoHistorial = "No se pudo cargar el historial de devoluciones: ${MensajeError.de(it, "error desconocido")}"
+                    )
+                }
+            )
         }
     }
 
@@ -93,16 +134,37 @@ class DevolucionViewModel @JvmOverloads constructor(
     fun confirmarActualizacionInventario() {
         val producto = _uiState.value.productoSeleccionado ?: return
         val apto = _uiState.value.resultadoApto ?: return
+        val etiqueta = _uiState.value.etiquetaDetectada ?: ""
+        val confianza = _uiState.value.confianza ?: 0f
         _uiState.value = _uiState.value.copy(actualizando = true, error = null)
         viewModelScope.launch {
             try {
                 repository.actualizarStockPorDevolucion(producto.id, apto)
-                val mensaje = if (apto) {
+                val usuario = FirebaseAuth.getInstance().currentUser
+                val registro = Devolucion(
+                    uidConsultora = usuario?.uid ?: "",
+                    emailConsultora = usuario?.email ?: "",
+                    productoId = producto.id,
+                    productoNombre = producto.nombre,
+                    apto = apto,
+                    etiquetaDetectada = etiqueta,
+                    confianza = confianza.toDouble(),
+                    stockRepuesto = apto,
+                    fecha = System.currentTimeMillis()
+                )
+                val guardado = devolucionRepository.guardar(registro)
+                val mensajeBase = if (apto) {
                     "Producto apto: se repuso 1 unidad al inventario"
                 } else {
                     "Producto no apto: descartado, inventario sin cambios"
                 }
+                val mensaje = if (guardado.isSuccess) {
+                    mensajeBase
+                } else {
+                    "$mensajeBase. No se pudo guardar el historial: ${guardado.exceptionOrNull()?.message}"
+                }
                 _uiState.value = _uiState.value.copy(actualizando = false, mensaje = mensaje)
+                if (guardado.isSuccess) cargarHistorial()
             } catch (excepcion: Exception) {
                 _uiState.value = _uiState.value.copy(actualizando = false, error = excepcion.message)
             }

@@ -2,6 +2,7 @@ package com.catalogoapp.consultoras.ui.screens.reparto
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -19,6 +20,7 @@ fun CrearRepartoScreen(
     onRepartoCreado: (Int) -> Unit
 ) {
     val estado by viewModel.uiState.collectAsState()
+    var mostrarDialogoRepartidor by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.cargarPedidosDisponibles()
@@ -26,8 +28,20 @@ fun CrearRepartoScreen(
 
     LaunchedEffect(estado.repartoCreado) {
         estado.repartoCreado?.let { reparto ->
-            onRepartoCreado(reparto.id)
+            val idCreado = reparto.id
+            viewModel.limpiarRepartoCreado()
+            onRepartoCreado(idCreado)
         }
+    }
+
+    if (mostrarDialogoRepartidor) {
+        DialogoNuevoRepartidor(
+            onCancelar = { mostrarDialogoRepartidor = false },
+            onGuardar = { nombre, placa, telefono ->
+                viewModel.agregarRepartidor(nombre, placa, telefono)
+                mostrarDialogoRepartidor = false
+            }
+        )
     }
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
@@ -49,20 +63,46 @@ fun CrearRepartoScreen(
         )
         Spacer(modifier = Modifier.height(8.dp))
 
-        OutlinedTextField(
-            value = estado.chofer,
-            onValueChange = viewModel::actualizarChofer,
-            label = { Text("Chofer") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(
-            value = estado.vehiculo,
-            onValueChange = viewModel::actualizarVehiculo,
-            label = { Text("Vehiculo") },
-            modifier = Modifier.fillMaxWidth()
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("Repartidor", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+            TextButton(onClick = { mostrarDialogoRepartidor = true }) { Text("Agregar repartidor") }
+        }
+        val activos = estado.repartidores.filter { it.activo }
+        if (activos.isEmpty()) {
+            Text(
+                "Aun no hay repartidores registrados. Agrega uno para poder crear repartos.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error
+            )
+        } else {
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(activos) { repartidor ->
+                    val ocupado = viewModel.estaOcupado(repartidor)
+                    FilterChip(
+                        selected = estado.repartidorSeleccionadoId == repartidor.id,
+                        onClick = { viewModel.seleccionarRepartidor(repartidor) },
+                        enabled = !ocupado,
+                        label = {
+                            Text(
+                                "${repartidor.nombre} - ${repartidor.vehiculo}" +
+                                    if (ocupado) " (en reparto)" else ""
+                            )
+                        }
+                    )
+                }
+            }
+            if (activos.all { viewModel.estaOcupado(it) }) {
+                Text(
+                    "Todos los repartidores estan en un reparto en curso.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+        }
         Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedTextField(
@@ -139,4 +179,55 @@ private fun FilaPedidoSeleccionable(
             }
         }
     }
+}
+
+@Composable
+private fun DialogoNuevoRepartidor(
+    onCancelar: () -> Unit,
+    onGuardar: (String, String, String) -> Unit
+) {
+    var nombre by remember { mutableStateOf("") }
+    var placa by remember { mutableStateOf("") }
+    var telefono by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onCancelar,
+        title = { Text("Nuevo repartidor") },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = nombre,
+                    onValueChange = { nombre = it },
+                    label = { Text("Nombre completo") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = placa,
+                    onValueChange = { placa = it },
+                    label = { Text("Placa del vehiculo") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = telefono,
+                    onValueChange = { telefono = it.filter { c -> c.isDigit() }.take(9) },
+                    label = { Text("Celular (opcional)") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onGuardar(nombre, placa, telefono) },
+                enabled = nombre.isNotBlank() && placa.isNotBlank()
+            ) { Text("Guardar") }
+        },
+        dismissButton = {
+            TextButton(onClick = onCancelar) { Text("Cancelar") }
+        }
+    )
 }

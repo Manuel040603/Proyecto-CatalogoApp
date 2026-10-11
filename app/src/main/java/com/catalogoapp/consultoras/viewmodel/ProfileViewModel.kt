@@ -83,17 +83,33 @@ class ProfileViewModel(
         email: String,
         nombre: String,
         preferencias: String,
-        fotoBase64: String
+        fotoBase64: String,
+        dni: String? = null,
+        celular: String? = null,
+        direccionEntrega: String? = null,
+        distrito: String? = null,
+        referencia: String? = null,
+        tipoComprobante: String? = null
     ) {
         _uiState.value = ProfileUiState.Guardando
         viewModelScope.launch {
-            val perfil = ConsultoraProfile(
+            val existente = _perfil.value?.takeIf { it.uid == uid }
+                ?: repository.obtenerPerfil(uid).getOrNull()
+                ?: ConsultoraProfile(uid = uid)
+            val perfil = existente.copy(
                 uid = uid,
                 nombre = nombre,
                 email = email,
                 preferencias = preferencias,
                 fotoBase64 = fotoBase64,
-                esAdmin = AdminConfig.esAdmin(email)
+                esAdmin = AdminConfig.esAdmin(email),
+                dni = dni ?: existente.dni,
+                celular = celular ?: existente.celular,
+                direccionEntrega = direccionEntrega ?: existente.direccionEntrega,
+                distrito = distrito ?: existente.distrito,
+                referencia = referencia ?: existente.referencia,
+                tipoComprobante = tipoComprobante ?: existente.tipoComprobante,
+                ultimaActualizacion = System.currentTimeMillis()
             )
             val resultado = repository.guardarPerfil(perfil)
 

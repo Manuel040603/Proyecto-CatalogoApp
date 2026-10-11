@@ -18,7 +18,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.catalogoapp.consultoras.ui.screens.admin.AdminConsultorasScreen
+import com.catalogoapp.consultoras.ui.screens.admin.AdminPedidosScreen
+import com.catalogoapp.consultoras.ui.screens.admin.AdminProductosScreen
 import com.catalogoapp.consultoras.ui.screens.admin.AgregarProductoScreen
+import com.catalogoapp.consultoras.ui.screens.comision.ComisionesScreen
 import com.catalogoapp.consultoras.ui.screens.auth.ForgotPasswordScreen
 import com.catalogoapp.consultoras.ui.screens.auth.LoginScreen
 import com.catalogoapp.consultoras.ui.screens.auth.RegisterScreen
@@ -69,6 +72,9 @@ object Rutas {
     const val CAPACITACION_DETALLE = "capacitacion_detalle"
     const val ADMIN_CONSULTORAS = "admin_consultoras"
     const val AGREGAR_PRODUCTO = "agregar_producto"
+    const val ADMIN_PRODUCTOS = "admin_productos"
+    const val ADMIN_PEDIDOS = "admin_pedidos"
+    const val COMISIONES = "comisiones"
     const val PEDIDOS = "pedidos"
     const val NUEVO_PEDIDO = "nuevo_pedido"
     const val LISTA_REPARTOS = "lista_repartos"
@@ -103,7 +109,7 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
     }
 
 
-    val destinoInicial = if (authViewModel.usuarioActual != null) Rutas.HOME else Rutas.LOGIN
+    val destinoInicial = remember { if (authViewModel.sesionValida()) Rutas.HOME else Rutas.LOGIN }
 
     NavHost(navController = navController, startDestination = destinoInicial) {
 
@@ -143,6 +149,15 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
 
         composable(Rutas.HOME) {
             val uid = authViewModel.usuarioActual?.uid ?: ""
+            val estadoHome by homeViewModel.uiState.collectAsState()
+            LaunchedEffect(estadoHome.cuentaInactiva) {
+                if (estadoHome.cuentaInactiva) {
+                    authViewModel.cerrarSesion()
+                    navController.navigate(Rutas.LOGIN) {
+                        popUpTo(0)
+                    }
+                }
+            }
             MainScreen(navController = navController) {
                 HomeScreen(
                     uid = uid,
@@ -150,7 +165,8 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
                     onNavegarACatalogo = { navController.navigate(Rutas.CATALOGO) },
                     onNavegarAPedidos = { navController.navigate(Rutas.PEDIDOS) },
                     onNavegarACapacitacion = { navController.navigate(Rutas.CAPACITACIONES) },
-                    onNavegarAPerfil = { navController.navigate(Rutas.PERFIL) }
+                    onNavegarAPerfil = { navController.navigate(Rutas.PERFIL) },
+                    onNavegarAComisiones = { navController.navigate(Rutas.COMISIONES) }
                 )
             }
         }
@@ -174,7 +190,9 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
                         onIrAAdminConsultoras = { navController.navigate(Rutas.ADMIN_CONSULTORAS) },
                         onIrAPedidos = { navController.navigate(Rutas.PEDIDOS) },
                         onIrAReparto = { navController.navigate(Rutas.LISTA_REPARTOS) },
-                        onIrAAgregarProducto = { navController.navigate(Rutas.AGREGAR_PRODUCTO) },
+                        onIrAAgregarProducto = { navController.navigate(Rutas.ADMIN_PRODUCTOS) },
+                        onIrAAdminPedidos = { navController.navigate(Rutas.ADMIN_PEDIDOS) },
+                        onIrAComisiones = { navController.navigate(Rutas.COMISIONES) },
                         onIrADevolucion = { navController.navigate(Rutas.DEVOLUCION) },
                         onIrAApariencia = { navController.navigate(Rutas.APARIENCIA) }
                     )
@@ -239,10 +257,9 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
                 NuevoPedidoScreen(
                     viewModel = pedidoViewModel,
                     onVolver = { navController.popBackStack() },
-                    onPedidoCreado = {
-                        // Navegamos al seguimiento del pedido recién creado
-                        // Por ahora usamos un ID genérico "1048" para demo
-                        navController.navigate("${Rutas.SEGUIMIENTO_PEDIDO}/1048") {
+                    onPedidoCreado = { idPedido ->
+                        val destino = if (idPedido > 0) "${Rutas.SEGUIMIENTO_PEDIDO}/$idPedido" else Rutas.PEDIDOS
+                        navController.navigate(destino) {
                             popUpTo(Rutas.NUEVO_PEDIDO) { inclusive = true }
                         }
                     }
@@ -336,13 +353,22 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
             route = "${Rutas.SEGUIMIENTO_PEDIDO}/{pedidoId}",
             arguments = listOf(navArgument("pedidoId") { type = NavType.StringType })
         ) { backStackEntry ->
-            val pedidoId = backStackEntry.arguments?.getString("pedidoId") ?: ""
+            val pedidoId = backStackEntry.arguments?.getString("pedidoId")?.toIntOrNull() ?: 0
+            val seguimientoViewModel = remember { SeguimientoViewModel() }
+            val estadoPedidos by pedidoViewModel.uiState.collectAsState()
+            LaunchedEffect(pedidoId) {
+                if (estadoPedidos.pedidos.none { it.id == pedidoId }) {
+                    pedidoViewModel.cargarPedidos()
+                }
+            }
             MainScreen(navController = navController) {
                 SeguimientoPedidoScreen(
                     pedidoId = pedidoId,
-                    reparto = null,
+                    pedido = estadoPedidos.pedidos.firstOrNull { it.id == pedidoId },
+                    detalle = estadoPedidos.detalles[pedidoId],
+                    viewModel = seguimientoViewModel,
                     onVolver = { navController.popBackStack() },
-                    onReportarProblema = { /* Abrir formulario de reclamo */ }
+                    onVerRuta = { idReparto -> navController.navigate("${Rutas.REPARTO_DETALLE}/$idReparto") }
                 )
             }
         }
@@ -359,7 +385,8 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
 
         composable(Rutas.CAPACITACIONES) {
             val capacitacionViewModel = remember { CapacitacionViewModel() }
-            val esAdmin = AdminConfig.esAdmin(authViewModel.usuarioActual?.email)
+            val administradoresActuales by AdminConfig.administradores.collectAsState()
+            val esAdmin = remember(administradoresActuales) { AdminConfig.esAdmin(authViewModel.usuarioActual?.email) }
             MainScreen(navController = navController) {
                 CapacitacionListScreen(
                     viewModel = capacitacionViewModel,
@@ -393,6 +420,37 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
                     capacitacionId = capacitacionId,
                     uid = uid,
                     viewModel = capacitacionDetalleViewModel,
+                    onVolver = { navController.popBackStack() }
+                )
+            }
+        }
+
+        composable(Rutas.ADMIN_PRODUCTOS) {
+            val adminProductosViewModel = remember { AdminProductosViewModel() }
+            PantallaConEspacioSuperior {
+                AdminProductosScreen(
+                    viewModel = adminProductosViewModel,
+                    onVolver = { navController.popBackStack() },
+                    onAgregar = { navController.navigate(Rutas.AGREGAR_PRODUCTO) }
+                )
+            }
+        }
+
+        composable(Rutas.ADMIN_PEDIDOS) {
+            val adminPedidosViewModel = remember { AdminPedidosViewModel() }
+            PantallaConEspacioSuperior {
+                AdminPedidosScreen(
+                    viewModel = adminPedidosViewModel,
+                    onVolver = { navController.popBackStack() }
+                )
+            }
+        }
+
+        composable(Rutas.COMISIONES) {
+            val comisionesViewModel = remember { ComisionesViewModel() }
+            PantallaConEspacioSuperior {
+                ComisionesScreen(
+                    viewModel = comisionesViewModel,
                     onVolver = { navController.popBackStack() }
                 )
             }

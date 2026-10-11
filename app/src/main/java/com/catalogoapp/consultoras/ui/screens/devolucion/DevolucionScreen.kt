@@ -13,7 +13,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
+import com.catalogoapp.consultoras.data.model.Devolucion
 import com.catalogoapp.consultoras.viewmodel.DevolucionViewModel
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun DevolucionScreen(
@@ -38,9 +42,10 @@ fun DevolucionScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         if (estado.productoSeleccionado == null) {
-            Text("Selecciona el producto devuelto", style = MaterialTheme.typography.bodyMedium)
-            Spacer(modifier = Modifier.height(8.dp))
             LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                item {
+                    Text("Selecciona el producto devuelto", style = MaterialTheme.typography.bodyMedium)
+                }
                 items(estado.productos) { producto ->
                     Card(
                         modifier = Modifier
@@ -51,6 +56,31 @@ fun DevolucionScreen(
                             Text(producto.nombre, style = MaterialTheme.typography.titleMedium)
                             Text(producto.categoria, style = MaterialTheme.typography.bodySmall)
                         }
+                    }
+                }
+                item {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        if (estado.historialDeTodas) "Historial de devoluciones (todas)" else "Mis devoluciones",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+                estado.avisoHistorial?.let { aviso ->
+                    item { Text(aviso, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
+                }
+                if (estado.cargandoHistorial) {
+                    item { CircularProgressIndicator(modifier = Modifier.size(24.dp)) }
+                } else if (estado.historial.isEmpty() && estado.avisoHistorial == null) {
+                    item {
+                        Text(
+                            "Aun no hay devoluciones registradas",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                } else {
+                    items(estado.historial) { devolucion ->
+                        TarjetaDevolucion(devolucion, mostrarConsultora = estado.historialDeTodas)
                     }
                 }
             }
@@ -131,3 +161,49 @@ fun DevolucionScreen(
     }
 }
 
+
+
+@Composable
+private fun TarjetaDevolucion(devolucion: Devolucion, mostrarConsultora: Boolean) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    devolucion.productoNombre,
+                    style = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    if (devolucion.apto) "APTO" else "NO APTO",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = if (devolucion.apto) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                )
+            }
+            Text(
+                SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.US).format(Date(devolucion.fecha)),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                "Etiqueta: ${devolucion.etiquetaDetectada} - Confianza: ${(devolucion.confianza * 100).toInt()}%",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                if (devolucion.stockRepuesto) "Se repuso 1 unidad al inventario" else "Inventario sin cambios",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            if (mostrarConsultora && devolucion.emailConsultora.isNotBlank()) {
+                Text(
+                    "Registrada por ${devolucion.emailConsultora}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}

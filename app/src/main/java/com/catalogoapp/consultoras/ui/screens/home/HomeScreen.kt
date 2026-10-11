@@ -6,6 +6,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -21,8 +23,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.catalogoapp.consultoras.data.model.Producto
+import com.catalogoapp.consultoras.util.AdminConfig
 import com.catalogoapp.consultoras.util.base64ABitmap
 import com.catalogoapp.consultoras.viewmodel.HomeViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 data class QuickAction(val title: String, val icon: androidx.compose.ui.graphics.vector.ImageVector, val color: Color)
 
@@ -33,9 +37,15 @@ fun HomeScreen(
     onNavegarACatalogo: () -> Unit,
     onNavegarAPedidos: () -> Unit,
     onNavegarACapacitacion: () -> Unit,
-    onNavegarAPerfil: () -> Unit
+    onNavegarAPerfil: () -> Unit,
+    onNavegarAComisiones: () -> Unit = {}
 ) {
     val estado by viewModel.uiState.collectAsState()
+    val correo = remember(uid) { FirebaseAuth.getInstance().currentUser?.email }
+    val administradores by AdminConfig.administradores.collectAsState()
+    val esAdmin = remember(correo, administradores) { AdminConfig.esAdmin(correo) }
+    var mostrarDialogoCampana by remember { mutableStateOf(false) }
+    val nombreMostrado = estado.nombre.ifBlank { correo?.substringBefore('@') ?: "Consultora" }
 
     LaunchedEffect(uid) {
         viewModel.cargar(uid)
@@ -52,6 +62,7 @@ fun HomeScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp)
     ) {
         Spacer(modifier = Modifier.height(48.dp))
@@ -63,14 +74,14 @@ fun HomeScreen(
         ) {
             Column {
                 Text(
-                    text = "Hola, ${estado.nombre.ifBlank { "Consultora" }}",
+                    text = "Hola, $nombreMostrado",
                     style = MaterialTheme.typography.headlineSmall.copy(
                         fontWeight = FontWeight.ExtraBold,
                         color = MaterialTheme.colorScheme.onBackground
                     )
                 )
                 Text(
-                    text = "${estado.rol} · Nivel ${estado.nivel}",
+                    text = if (esAdmin) "Administrador" else "${estado.rol} · Nivel ${estado.nivel}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -125,49 +136,99 @@ fun HomeScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Banner de Campaña v3
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(120.dp),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxSize().padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
+        if (mostrarDialogoCampana) {
+            DialogoCampana(
+                etiquetaInicial = estado.campana?.etiqueta ?: "",
+                tituloInicial = estado.campana?.titulo ?: "",
+                detalleInicial = estado.campana?.detalle ?: "",
+                activaInicial = estado.campana?.activa ?: true,
+                guardando = estado.guardandoCampana,
+                error = estado.errorCampana,
+                onGuardar = { etiqueta, titulo, detalle, activa ->
+                    viewModel.guardarCampana(etiqueta, titulo, detalle, activa) { mostrarDialogoCampana = false }
+                },
+                onCancelar = {
+                    viewModel.limpiarErrorCampana()
+                    mostrarDialogoCampana = false
+                }
+            )
+        }
+
+        val campana = estado.campana
+        if (campana != null && campana.activa) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
-                Column(modifier = Modifier.weight(1f)) {
+                Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                    if (campana.etiqueta.isNotBlank()) {
+                        Text(
+                            campana.etiqueta,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                     Text(
-                        "Campaña 12",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Text(
-                        "Hasta 15% en fragancias",
+                        campana.titulo,
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
-                    Text(
-                        "Cierra el 18 oct",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                Box(
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(Icons.Default.ShoppingCart, contentDescription = null, tint = MaterialTheme.colorScheme.outline)
+                    if (campana.detalle.isNotBlank()) {
+                        Text(
+                            campana.detalle,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    if (esAdmin) {
+                        TextButton(onClick = { mostrarDialogoCampana = true }) { Text("Editar campaña") }
+                    }
                 }
             }
+            Spacer(modifier = Modifier.height(24.dp))
+        } else if (esAdmin) {
+            OutlinedButton(
+                onClick = { mostrarDialogoCampana = true },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(if (campana == null) "Crear campaña para el inicio" else "Campaña desactivada: editar")
+            }
+            Spacer(modifier = Modifier.height(24.dp))
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        if (esAdmin && estado.productosStockBajo.isNotEmpty()) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        "Stock bajo (${estado.productosStockBajo.size} producto(s))",
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    estado.productosStockBajo.take(5).forEach { producto ->
+                        Text(
+                            "${producto.nombre}: ${if (producto.stock <= 0) "agotado" else "quedan ${producto.stock}"}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                    }
+                    if (estado.productosStockBajo.size > 5) {
+                        Text(
+                            "y ${estado.productosStockBajo.size - 5} mas en Perfil, Administrar productos",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+        }
 
         Text(
             text = "Acciones Rápidas",
@@ -187,7 +248,7 @@ fun HomeScreen(
                             "Catálogo" -> onNavegarACatalogo()
                             "Pedidos" -> onNavegarAPedidos()
                             "Aprender" -> onNavegarACapacitacion()
-                            "Comisiones" -> { /* Navegar a Comisiones */ }
+                            "Comisiones" -> onNavegarAComisiones()
                         }
                     }
                 )
@@ -334,4 +395,67 @@ fun FeaturedProductCard(producto: Producto, onClick: () -> Unit) {
             }
         }
     }
+}
+
+
+@Composable
+private fun DialogoCampana(
+    etiquetaInicial: String,
+    tituloInicial: String,
+    detalleInicial: String,
+    activaInicial: Boolean,
+    guardando: Boolean,
+    error: String?,
+    onGuardar: (String, String, String, Boolean) -> Unit,
+    onCancelar: () -> Unit
+) {
+    var etiqueta by remember { mutableStateOf(etiquetaInicial) }
+    var titulo by remember { mutableStateOf(tituloInicial) }
+    var detalle by remember { mutableStateOf(detalleInicial) }
+    var activa by remember { mutableStateOf(activaInicial) }
+
+    AlertDialog(
+        onDismissRequest = { if (!guardando) onCancelar() },
+        title = { Text("Campaña del inicio") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = etiqueta,
+                    onValueChange = { etiqueta = it },
+                    label = { Text("Etiqueta (ej. Campaña 12)") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = titulo,
+                    onValueChange = { titulo = it },
+                    label = { Text("Titulo") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = detalle,
+                    onValueChange = { detalle = it },
+                    label = { Text("Detalle (ej. fecha de cierre)") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Mostrar a las consultoras")
+                    Switch(checked = activa, onCheckedChange = { activa = it })
+                }
+                error?.let {
+                    Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                }
+            }
+        },
+        confirmButton = {
+            Button(onClick = { onGuardar(etiqueta, titulo, detalle, activa) }, enabled = !guardando) {
+                if (guardando) CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp) else Text("Guardar")
+            }
+        },
+        dismissButton = { TextButton(onClick = onCancelar, enabled = !guardando) { Text("Cancelar") } }
+    )
 }

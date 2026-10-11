@@ -46,6 +46,8 @@ fun ProfileScreen(
     onIrAPedidos: () -> Unit = {},
     onIrAReparto: () -> Unit = {},
     onIrAAgregarProducto: () -> Unit = {},
+    onIrAAdminPedidos: () -> Unit = {},
+    onIrAComisiones: () -> Unit = {},
     onIrADevolucion: () -> Unit = {},
     onIrAProgreso: () -> Unit = {},
     onIrAAjustesIA: () -> Unit = {},
@@ -61,9 +63,11 @@ fun ProfileScreen(
         viewModel.cargarEstadisticas()
         viewModel.registrarTokenFcm()
         viewModel.programarRecordatorioPedidos(context)
+        AdminConfig.cargarRol(usuario.email)
     }
 
-    val esAdmin = remember(usuario.email) { AdminConfig.esAdmin(usuario.email) }
+    val administradores by AdminConfig.administradores.collectAsState()
+    val esAdmin = remember(usuario.email, administradores) { AdminConfig.esAdmin(usuario.email) }
 
     val fotoGuardada = remember(perfilCargado) {
         perfilCargado?.fotoBase64?.takeIf { it.isNotBlank() }?.let { base64ABitmap(it) }
@@ -118,12 +122,14 @@ fun ProfileScreen(
 
                 Column {
                     Text(
-                        text = if (perfilCargado?.nombre.isNullOrBlank()) "Consultora" else perfilCargado?.nombre ?: "",
+                        text = perfilCargado?.nombre?.takeIf { it.isNotBlank() }
+                            ?: usuario.email?.substringBefore('@')
+                            ?: "Consultora",
                         style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold),
                         color = MaterialTheme.colorScheme.onBackground
                     )
                     Text(
-                        text = "${perfilCargado?.rol ?: "Consultora"} · Nivel ${perfilCargado?.nivel ?: "Plata"}",
+                        text = if (esAdmin) "Administrador" else "${perfilCargado?.rol ?: "Consultora"} · Nivel ${perfilCargado?.nivel ?: "Plata"}",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -142,7 +148,7 @@ fun ProfileScreen(
                 )
                 ProfileMenuOption(
                     label = "Mi progreso",
-                    sublabel = "${perfilCargado?.nivel ?: "Plata"} · ${ (perfilCargado?.progreso ?: 0.0) * 100 }%",
+                    sublabel = "${perfilCargado?.nivel ?: "Plata"} · ${"%.0f".format((perfilCargado?.progreso ?: 0.0) * 100)}%",
                     icon = Icons.Default.TrendingUp,
                     onClick = onIrAProgreso
                 )
@@ -164,6 +170,44 @@ fun ProfileScreen(
                     icon = Icons.Default.Palette,
                     onClick = onIrAApariencia
                 )
+                ProfileMenuOption(
+                    label = "Comisiones",
+                    sublabel = "Lo que ganas por tus pedidos entregados",
+                    icon = Icons.Default.AccountBalanceWallet,
+                    onClick = onIrAComisiones
+                )
+                ProfileMenuOption(
+                    label = "Devoluciones",
+                    sublabel = "Registrar un producto devuelto y ver el historial",
+                    icon = Icons.Default.Replay,
+                    onClick = onIrADevolucion
+                )
+                if (esAdmin) {
+                    ProfileMenuOption(
+                        label = "Repartos y rutas",
+                        sublabel = "Repartidores, repartos y mapa",
+                        icon = Icons.Default.LocalShipping,
+                        onClick = onIrAReparto
+                    )
+                    ProfileMenuOption(
+                        label = "Administrar productos",
+                        sublabel = "Agregar, editar, eliminar y ver stock",
+                        icon = Icons.Default.AddBox,
+                        onClick = onIrAAgregarProducto
+                    )
+                    ProfileMenuOption(
+                        label = "Todos los pedidos",
+                        sublabel = "Pedidos de todas las consultoras",
+                        icon = Icons.Default.ListAlt,
+                        onClick = onIrAAdminPedidos
+                    )
+                    ProfileMenuOption(
+                        label = "Consultoras",
+                        sublabel = "Ver, editar y activar o desactivar cuentas",
+                        icon = Icons.Default.Group,
+                        onClick = onIrAAdminConsultoras
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(40.dp))

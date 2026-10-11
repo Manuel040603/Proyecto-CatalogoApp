@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
+import com.catalogoapp.consultoras.util.PedidoValidacion
 import com.catalogoapp.consultoras.util.bitmapABase64
 import com.catalogoapp.consultoras.util.base64ABitmap
 import com.catalogoapp.consultoras.viewmodel.ProfileUiState
@@ -47,6 +48,8 @@ fun EditProfileScreen(
     var distrito by remember { mutableStateOf("") }
     var referencia by remember { mutableStateOf("") }
     var tipoComprobante by remember { mutableStateOf("Boleta") }
+    var preferencias by remember { mutableStateOf("") }
+    var errorFormulario by remember { mutableStateOf<String?>(null) }
     var fotoNueva by remember { mutableStateOf<Bitmap?>(null) }
     val estado by viewModel.uiState.collectAsState()
     val perfilCargado by viewModel.perfil.collectAsState()
@@ -58,6 +61,7 @@ fun EditProfileScreen(
     LaunchedEffect(perfilCargado) {
         perfilCargado?.let { perfil ->
             nombre = perfil.nombre
+            preferencias = perfil.preferencias
             dni = perfil.dni
             celular = perfil.celular
             direccion = perfil.direccionEntrega
@@ -161,7 +165,7 @@ fun EditProfileScreen(
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             OutlinedTextField(
                 value = dni,
-                onValueChange = { if (it.length <= 8) dni = it },
+                onValueChange = { dni = PedidoValidacion.soloDigitos(it, 8) },
                 label = { Text("DNI") },
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
@@ -169,13 +173,24 @@ fun EditProfileScreen(
             )
             OutlinedTextField(
                 value = celular,
-                onValueChange = { celular = it },
+                onValueChange = { celular = PedidoValidacion.soloDigitos(it, 9) },
                 label = { Text("Celular") },
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.weight(1f)
             )
         }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        OutlinedTextField(
+            value = preferencias,
+            onValueChange = { preferencias = it },
+            label = { Text("Preferencias (categorías o productos que más vendes)") },
+            minLines = 2,
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier.fillMaxWidth()
+        )
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -229,20 +244,42 @@ fun EditProfileScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(24.dp))
+
+        errorFormulario?.let { mensajeError ->
+            Text(mensajeError, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+            Spacer(modifier = Modifier.height(12.dp))
+        }
 
         Button(
             onClick = {
-                val fotoParaGuardar = fotoNueva?.let { bitmapABase64(it) } ?: perfilCargado?.fotoBase64 ?: ""
-                viewModel.guardarPerfil(
-                    context = context,
-                    uid = usuario.uid,
-                    email = usuario.email ?: "",
-                    nombre = nombre,
-                    preferencias = "",
-                    fotoBase64 = fotoParaGuardar
-                )
-                onVolver()
+                val problema = when {
+                    dni.isNotEmpty() && dni.length != 8 -> "El DNI debe tener 8 digitos"
+                    celular.isNotEmpty() && PedidoValidacion.validarCelular(celular) != null ->
+                        "El celular debe tener 9 digitos y empezar con 9"
+                    else -> null
+                }
+                if (problema != null) {
+                    errorFormulario = problema
+                } else {
+                    errorFormulario = null
+                    val fotoParaGuardar = fotoNueva?.let { bitmapABase64(it) } ?: perfilCargado?.fotoBase64 ?: ""
+                    viewModel.guardarPerfil(
+                        context = context,
+                        uid = usuario.uid,
+                        email = usuario.email ?: "",
+                        nombre = nombre,
+                        preferencias = preferencias.trim(),
+                        fotoBase64 = fotoParaGuardar,
+                        dni = dni,
+                        celular = celular,
+                        direccionEntrega = direccion,
+                        distrito = distrito,
+                        referencia = referencia,
+                        tipoComprobante = tipoComprobante
+                    )
+                    onVolver()
+                }
             },
             enabled = estado !is ProfileUiState.Guardando && nombre.isNotBlank(),
             modifier = Modifier.fillMaxWidth().height(56.dp),

@@ -20,14 +20,13 @@ class ProfileSyncWorker(
         val email = inputData.getString(KEY_EMAIL) ?: ""
         val preferencias = inputData.getString(KEY_PREFERENCIAS) ?: ""
 
-        val fotoActual = repository.obtenerPerfil(uid).getOrNull()?.fotoBase64 ?: ""
+        val existente = repository.obtenerPerfil(uid).getOrNull() ?: ConsultoraProfile(uid = uid)
 
-        val perfil = ConsultoraProfile(
+        val perfil = existente.copy(
             uid = uid,
             nombre = nombre,
             email = email,
             preferencias = preferencias,
-            fotoBase64 = fotoActual,
             esAdmin = AdminConfig.esAdmin(email)
         )
 

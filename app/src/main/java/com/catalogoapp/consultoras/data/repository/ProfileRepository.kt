@@ -41,6 +41,40 @@ class ProfileRepository {
         awaitClose { registro.remove() }
     }
 
+    suspend fun actualizarProgreso(uid: String, nivel: String, progreso: Double): Result<Unit> = try {
+        documento(uid).update(mapOf("nivel" to nivel, "progreso" to progreso)).await()
+        Result.success(Unit)
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+
+    suspend fun actualizarDatosAdmin(
+        uid: String,
+        nombre: String,
+        dni: String,
+        celular: String,
+        preferencias: String,
+        direccionEntrega: String,
+        distrito: String,
+        referencia: String
+    ): Result<Unit> = try {
+        documento(uid).update(
+            mapOf(
+                "nombre" to nombre,
+                "dni" to dni,
+                "celular" to celular,
+                "preferencias" to preferencias,
+                "direccionEntrega" to direccionEntrega,
+                "distrito" to distrito,
+                "referencia" to referencia,
+                "ultimaActualizacion" to System.currentTimeMillis()
+            )
+        ).await()
+        Result.success(Unit)
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+
     suspend fun actualizarEstado(uid: String, activo: Boolean): Result<Unit> = try {
         documento(uid).update("activo", activo).await()
         Result.success(Unit)

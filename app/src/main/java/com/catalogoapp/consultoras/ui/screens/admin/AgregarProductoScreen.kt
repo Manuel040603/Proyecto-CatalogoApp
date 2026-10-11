@@ -44,6 +44,7 @@ fun AgregarProductoScreen(
     var precio by remember { mutableStateOf("") }
     var descripcion by remember { mutableStateOf("") }
     var stock by remember { mutableStateOf("") }
+    var comision by remember { mutableStateOf("") }
     var foto by remember { mutableStateOf<Bitmap?>(null) }
 
     val lanzadorCamara = rememberLauncherForActivityResult(
@@ -55,7 +56,8 @@ fun AgregarProductoScreen(
     ) { concedido -> if (concedido) lanzadorCamara.launch(null) }
 
     val formularioValido = nombre.isNotBlank() && categoria.isNotBlank() &&
-        precio.toDoubleOrNull() != null && stock.toIntOrNull() != null
+        precio.toDoubleOrNull() != null && stock.toIntOrNull() != null &&
+        (comision.isBlank() || comision.toDoubleOrNull() != null)
 
     Column(
         modifier = Modifier
@@ -154,6 +156,16 @@ fun AgregarProductoScreen(
         Spacer(modifier = Modifier.height(12.dp))
 
         OutlinedTextField(
+            value = comision,
+            onValueChange = { comision = it },
+            label = { Text("Comision por unidad (S/, opcional)") },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+
+        OutlinedTextField(
             value = descripcion,
             onValueChange = { descripcion = it },
             label = { Text("Descripcion") },
@@ -170,7 +182,8 @@ fun AgregarProductoScreen(
                     precio = precio.toDoubleOrNull() ?: 0.0,
                     descripcion = descripcion,
                     stock = stock.toIntOrNull() ?: 0,
-                    imagenBase64 = imagenBase64
+                    imagenBase64 = imagenBase64,
+                    comision = comision.toDoubleOrNull() ?: 0.0
                 )
             },
             enabled = formularioValido && estado !is AgregarProductoUiState.Guardando,
@@ -194,6 +207,7 @@ fun AgregarProductoScreen(
                     precio = ""
                     descripcion = ""
                     stock = ""
+                    comision = ""
                     foto = null
                 }
             }

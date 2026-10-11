@@ -35,15 +35,49 @@ class ProductRepository {
             Producto(nombre = "Perfume Floral 50ml", categoria = "Fragancias", precio = 89.9, descripcion = "Notas florales", stock = 20, imagenUrl = IMG_PERFUME),
             Producto(nombre = "Vela Aromatica Vainilla", categoria = "Velas", precio = 24.9, descripcion = "40 horas de duracion", stock = 35, imagenUrl = IMG_VELA)
         )
-        ejemplos.forEach { producto ->
-            val doc = coleccion.document()
-            doc.set(producto.copy(id = doc.id)).await()
+        try {
+            ejemplos.forEach { producto ->
+                val doc = coleccion.document()
+                doc.set(producto.copy(id = doc.id)).await()
+            }
+        } catch (e: Exception) {
         }
     }
 
     suspend fun agregarProducto(producto: Producto): Result<Unit> = try {
         val doc = coleccion.document()
         doc.set(producto.copy(id = doc.id)).await()
+        Result.success(Unit)
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+
+    suspend fun actualizarProducto(
+        id: String,
+        nombre: String,
+        categoria: String,
+        precio: Double,
+        descripcion: String,
+        stock: Int,
+        comision: Double
+    ): Result<Unit> = try {
+        coleccion.document(id).update(
+            mapOf(
+                "nombre" to nombre,
+                "categoria" to categoria,
+                "precio" to precio,
+                "descripcion" to descripcion,
+                "stock" to stock,
+                "comision" to comision
+            )
+        ).await()
+        Result.success(Unit)
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+
+    suspend fun eliminarProducto(id: String): Result<Unit> = try {
+        coleccion.document(id).delete().await()
         Result.success(Unit)
     } catch (e: Exception) {
         Result.failure(e)

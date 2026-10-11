@@ -12,7 +12,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.catalogoapp.consultoras.data.model.PedidoDetalle
 import com.catalogoapp.consultoras.data.model.PedidoResponse
+import com.catalogoapp.consultoras.util.PedidoValidacion
 import com.catalogoapp.consultoras.viewmodel.PedidoViewModel
 
 @Composable
@@ -45,6 +47,19 @@ fun PedidoListScreen(
         }
         Spacer(modifier = Modifier.height(12.dp))
 
+        estado.aviso?.let { aviso ->
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text(aviso, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onErrorContainer)
+                    TextButton(onClick = { viewModel.limpiarAviso() }) { Text("Entendido") }
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
         estado.error?.let { error ->
             Text(error, color = MaterialTheme.colorScheme.error)
             Spacer(modifier = Modifier.height(8.dp))
@@ -72,6 +87,7 @@ fun PedidoListScreen(
             items(estado.pedidos) { pedido ->
                 TarjetaPedido(
                     pedido = pedido,
+                    detalle = estado.detalles[pedido.id],
                     siguienteEstado = viewModel.siguienteEstadoDe(pedido.estado),
                     actualizando = estado.actualizandoId == pedido.id,
                     onAvanzarEstado = { viewModel.avanzarEstado(pedido) },
@@ -85,6 +101,7 @@ fun PedidoListScreen(
 @Composable
 private fun TarjetaPedido(
     pedido: PedidoResponse,
+    detalle: PedidoDetalle?,
     siguienteEstado: String?,
     actualizando: Boolean,
     onAvanzarEstado: () -> Unit,
@@ -109,6 +126,27 @@ private fun TarjetaPedido(
                 "$totalUnidades unidad(es) de ${pedido.items.size} productos"
             }
             Text("$textoProductos - S/ ${"%.2f".format(pedido.total)}", style = MaterialTheme.typography.bodyMedium)
+
+            if (detalle != null) {
+                if (detalle.numeroDocumento.isNotBlank()) {
+                    val textoDocumento = if (detalle.tipoDocumento == PedidoValidacion.RUC) {
+                        "RUC ${detalle.numeroDocumento} - ${detalle.razonSocial}"
+                    } else {
+                        "DNI ${detalle.numeroDocumento}"
+                    }
+                    LineaDetalle(textoDocumento)
+                }
+                LineaDetalle("Entrega ${detalle.tipoEntrega.replaceFirstChar { it.lowercase() }}: ${PedidoValidacion.armarDireccion(detalle.direccion, detalle.distrito)}")
+                if (detalle.referencia.isNotBlank()) LineaDetalle("Referencia: ${detalle.referencia}")
+                if (detalle.fechaEntrega.isNotBlank()) LineaDetalle("Entrega: ${detalle.fechaEntrega}")
+                if (detalle.indicaciones.isNotBlank()) LineaDetalle("Indicaciones: ${detalle.indicaciones}")
+                if (detalle.costoEnvio > 0.0) {
+                    LineaDetalle("Envio: S/ ${"%.2f".format(detalle.costoEnvio)} - Total a cobrar: S/ ${"%.2f".format(detalle.totalCobrado)}")
+                }
+                LineaDetalle("Pago: ${detalle.metodoPago}")
+            } else if (pedido.direccion.isNotBlank()) {
+                LineaDetalle("Direccion: ${pedido.direccion}")
+            }
 
             // BOTÓN DE RASTREO: Solo aparece si el pedido está ENVIADO o EN RUTA
             if (pedido.estado == "ENVIADO" || pedido.estado == "EN RUTA") {
@@ -140,6 +178,12 @@ private fun TarjetaPedido(
             }
         }
     }
+}
+
+@Composable
+private fun LineaDetalle(texto: String) {
+    Spacer(modifier = Modifier.height(2.dp))
+    Text(texto, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
 }
 
 @Composable

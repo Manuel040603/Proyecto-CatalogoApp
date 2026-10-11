@@ -1,5 +1,18 @@
 package com.catalogoapp.consultoras.ui.screens.catalogo
 
+import android.Manifest
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.speech.RecognizerIntent
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
+import com.catalogoapp.consultoras.util.BusquedaPorFoto
+import com.catalogoapp.consultoras.util.Inventario
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -38,6 +51,48 @@ fun CatalogoScreen(
 ) {
     val estado by viewModel.uiState.collectAsState()
     var searchQuery by remember { mutableStateOf("") }
+    var analizandoFoto by remember { mutableStateOf(false) }
+    val contexto = LocalContext.current
+    val alcance = rememberCoroutineScope()
+
+    val lanzadorVoz = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { resultado ->
+        val texto = resultado.data
+            ?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+            ?.firstOrNull()
+        if (!texto.isNullOrBlank()) searchQuery = texto.trim()
+    }
+
+    val lanzadorCamara = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicturePreview()
+    ) { bitmap ->
+        if (bitmap != null) {
+            analizandoFoto = true
+            alcance.launch {
+                try {
+                    val deteccion = BusquedaPorFoto.analizar(bitmap)
+                    if (deteccion.palabraClave != null) {
+                        searchQuery = deteccion.palabraClave
+                        Toast.makeText(contexto, "Detectado: ${deteccion.etiquetas.first()}", Toast.LENGTH_SHORT).show()
+                    } else {
+                        val detectado = if (deteccion.etiquetas.isEmpty()) "nada con claridad" else deteccion.etiquetas.take(3).joinToString(", ")
+                        Toast.makeText(contexto, "No se reconocio un producto del catalogo. Detectado: $detectado", Toast.LENGTH_LONG).show()
+                    }
+                } catch (excepcion: Exception) {
+                    Toast.makeText(contexto, "No se pudo analizar la foto", Toast.LENGTH_SHORT).show()
+                } finally {
+                    analizandoFoto = false
+                }
+            }
+        }
+    }
+
+    val lanzadorPermisoCamara = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { concedido ->
+        if (concedido) lanzadorCamara.launch(null)
+    }
 
     Column(
         modifier = Modifier
@@ -67,10 +122,33 @@ fun CatalogoScreen(
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
             trailingIcon = {
                 Row {
-                    IconButton(onClick = { /* IA Cámara */ }) {
-                        Icon(Icons.Default.PhotoCamera, contentDescription = "Buscar por foto", tint = MaterialTheme.colorScheme.primary)
+                    IconButton(
+                        enabled = !analizandoFoto,
+                        onClick = {
+                            val permisoOk = ContextCompat.checkSelfPermission(
+                                contexto, Manifest.permission.CAMERA
+                            ) == PackageManager.PERMISSION_GRANTED
+                            if (permisoOk) lanzadorCamara.launch(null) else lanzadorPermisoCamara.launch(Manifest.permission.CAMERA)
+                        }
+                    ) {
+                        if (analizandoFoto) {
+                            CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                        } else {
+                            Icon(Icons.Default.PhotoCamera, contentDescription = "Buscar por foto", tint = MaterialTheme.colorScheme.primary)
+                        }
                     }
-                    IconButton(onClick = { /* IA Voz */ }) {
+                    IconButton(onClick = {
+                        val intento = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                            putExtra(RecognizerIntent.EXTRA_LANGUAGE, "es-PE")
+                            putExtra(RecognizerIntent.EXTRA_PROMPT, "Di el producto que buscas")
+                        }
+                        try {
+                            lanzadorVoz.launch(intento)
+                        } catch (excepcion: ActivityNotFoundException) {
+                            Toast.makeText(contexto, "Este dispositivo no tiene reconocimiento de voz", Toast.LENGTH_SHORT).show()
+                        }
+                    }) {
                         Icon(Icons.Default.Mic, contentDescription = "Búsqueda por voz", tint = MaterialTheme.colorScheme.primary)
                     }
                 }
@@ -174,6 +252,24 @@ fun RetailProductCard(producto: Producto, onClick: () -> Unit) {
                     ) {
                         Text(
                             "NUEVO",
+                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                            color = Color.White
+                        )
+                    }
+                }
+
+                val etiquetaStock = Inventario.etiqueta(producto.stock)
+                if (etiquetaStock != null) {
+                    Surface(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(8.dp),
+                        color = MaterialTheme.colorScheme.error,
+                        shape = RoundedCornerShape(4.dp)
+                    ) {
+                        Text(
+                            etiquetaStock,
                             modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
                             style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                             color = Color.White

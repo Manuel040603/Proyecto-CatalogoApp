@@ -2,12 +2,11 @@ package com.catalogoapp.consultoras.ui.screens.reparto
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -18,24 +17,50 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.catalogoapp.consultoras.data.model.RepartoResponse
+import com.catalogoapp.consultoras.data.model.PedidoDetalle
+import com.catalogoapp.consultoras.data.model.PedidoResponse
+import com.catalogoapp.consultoras.util.PedidoValidacion
+import com.catalogoapp.consultoras.viewmodel.SeguimientoViewModel
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
+private fun fechaCorta(texto: String): String {
+    return if (texto.isBlank()) "" else texto.replace('T', ' ').take(16)
+}
+
+private fun fechaHora(milisegundos: Long): String {
+    return SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.US).format(Date(milisegundos))
+}
+
+private fun fechaDeEstado(detalle: PedidoDetalle?, estados: List<String>): String? {
+    val cambio = detalle?.historial?.lastOrNull { it.estado in estados && it.fecha > 0L }
+    return cambio?.let { fechaHora(it.fecha) }
+}
 
 @Composable
 fun SeguimientoPedidoScreen(
-    pedidoId: String,
-    reparto: RepartoResponse?,
+    pedidoId: Int,
+    pedido: PedidoResponse?,
+    detalle: PedidoDetalle?,
+    viewModel: SeguimientoViewModel,
     onVolver: () -> Unit,
-    onReportarProblema: () -> Unit
+    onVerRuta: (Int) -> Unit
 ) {
+    val estado by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(pedidoId) {
+        viewModel.cargar(pedidoId)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
-            .navigationBarsPadding() // Evita que la barra de navegación tape el botón inferior
+            .navigationBarsPadding()
             .padding(bottom = 32.dp)
     ) {
-        // Barra Superior v3
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -51,43 +76,68 @@ fun SeguimientoPedidoScreen(
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
-            Spacer(modifier = Modifier.size(48.dp)) // Balance for the back button
+            Spacer(modifier = Modifier.size(48.dp))
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        if (pedido == null) {
+            Box(
+                modifier = Modifier.fillMaxWidth().padding(32.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("No se encontro el pedido #$pedidoId", style = MaterialTheme.typography.bodyMedium)
+            }
+            return@Column
+        }
 
-        // Mapa Placeholder v3
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(300.dp)
-                .padding(horizontal = 16.dp)
-                .clip(RoundedCornerShape(24.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant),
-            contentAlignment = Alignment.Center
+        Card(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(Icons.Default.Map, contentDescription = null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.outline)
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text("Pedido #${pedido.id}", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(pedido.nombreCliente, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+                Spacer(modifier = Modifier.height(4.dp))
+                val direccion = if (detalle != null) {
+                    PedidoValidacion.armarDireccion(detalle.direccion, detalle.distrito)
+                } else {
+                    pedido.direccion
+                }
+                if (direccion.isNotBlank()) {
+                    Text(direccion, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                if (detalle != null && detalle.fechaEntrega.isNotBlank()) {
+                    Text("Entrega: ${detalle.fechaEntrega}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
                 Spacer(modifier = Modifier.height(8.dp))
+                pedido.items.forEach { item ->
+                    Text(
+                        "${item.cantidad} x ${item.nombreProducto}",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                if (detalle != null && detalle.costoEnvio > 0.0) {
+                    Text(
+                        "Envio: S/ ${"%.2f".format(detalle.costoEnvio)}",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
                 Text(
-                    "Cargando mapa de ruta...",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.outline
+                    "Total: S/ ${"%.2f".format(if (detalle != null && detalle.totalCobrado > 0.0) detalle.totalCobrado else pedido.total)}",
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
-
-            Box(
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .size(20.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary)
-            )
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Línea de Tiempo de Estados v3 - Rediseñada sin "colitas"
+        val enviado = pedido.estado == "ENVIADO" || pedido.estado == "EN RUTA"
+        val entregado = pedido.estado == "ENTREGADO"
+        val reparto = estado.reparto
+        val parada = estado.parada
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -96,81 +146,135 @@ fun SeguimientoPedidoScreen(
         ) {
             EstadoTimelineItem(
                 titulo = "Registrado",
-                subtitulo = "Hoy, 9:12 a.m.",
+                subtitulo = fechaDeEstado(detalle, listOf("PENDIENTE"))
+                    ?: fechaCorta(pedido.fechaCreacion).ifBlank { "Fecha no disponible" },
                 completado = true,
-                esActual = false,
-                color = MaterialTheme.colorScheme.outlineVariant // Neutro
+                esActual = !enviado && !entregado,
+                color = MaterialTheme.colorScheme.primary
             )
             EstadoTimelineItem(
                 titulo = "En ruta",
-                subtitulo = "Zona Surco",
-                completado = true,
-                esActual = true,
-                color = MaterialTheme.colorScheme.primary // Rosado/Primario
+                subtitulo = when {
+                    reparto != null -> "Reparto #${reparto.id} - ${reparto.zona}"
+                    enviado || entregado -> fechaDeEstado(detalle, listOf("ENVIADO", "EN RUTA")) ?: "Pedido enviado"
+                    else -> "Pendiente de envio"
+                },
+                completado = enviado || entregado,
+                esActual = enviado,
+                color = MaterialTheme.colorScheme.primary
             )
             EstadoTimelineItem(
                 titulo = "Entregado",
-                subtitulo = "Llega hoy entre 3 y 4 p.m.",
-                completado = false,
-                esActual = false,
-                color = Color(0xFF4CAF50) // Verde éxito
+                subtitulo = if (entregado) {
+                    fechaDeEstado(detalle, listOf("ENTREGADO"))
+                        ?: fechaCorta(pedido.fechaActualizacion).ifBlank { "Entregado" }
+                } else "Pendiente",
+                completado = entregado,
+                esActual = entregado,
+                color = Color(0xFF4CAF50)
             )
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Tarjeta del Chofer v3
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-        ) {
-            Row(
-                modifier = Modifier.padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
+        val historial = detalle?.historial.orEmpty().filter { it.fecha > 0L }.sortedBy { it.fecha }
+        if (historial.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(24.dp))
+            Card(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(56.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primaryContainer),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = reparto?.chofer ?: "Luis Ramos",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                    )
-                    Text(
-                        text = "${reparto?.vehiculo ?: "ABC-123"} — Llega en 25 min",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text("Historial de estados", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                    Spacer(modifier = Modifier.height(8.dp))
+                    historial.forEach { cambio ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(cambio.estado, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
+                            Text(
+                                fechaHora(cambio.fecha),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
-        // Botón Reportar Problema
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 32.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            TextButton(
-                onClick = onReportarProblema,
-                modifier = Modifier.padding(bottom = 16.dp)
+        if (estado.cargando) {
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        } else if (reparto != null) {
+            Card(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
             ) {
-                Icon(Icons.Default.Warning, contentDescription = null, modifier = Modifier.size(18.dp))
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(56.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primaryContainer),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = reparto.chofer,
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                        )
+                        Text(
+                            text = "Vehiculo ${reparto.vehiculo}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        if (parada != null) {
+                            val textoParada = "Parada ${parada.orden} de ${reparto.paradas.size}" +
+                                if (parada.entregada) " - entregada" else ""
+                            Text(
+                                text = textoParada,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Button(
+                onClick = { onVerRuta(reparto.id) },
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Icon(Icons.Default.Map, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Reportar un problema", color = MaterialTheme.colorScheme.error)
+                Text("Ver ruta en el mapa")
+            }
+        } else {
+            Card(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text("Sin reparto asignado", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
+                    Text(
+                        estado.error ?: "Este pedido aun no esta en un reparto. Cuando se asigne, aqui veras chofer, vehiculo y la ruta.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
     }
