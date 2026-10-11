@@ -7,5 +7,12 @@ data class Producto @JvmOverloads constructor(
     val precio: Double = 0.0,
     val descripcion: String = "",
     val stock: Int = 0,
-    val imagenUrl: String = ""
+    val imagenUrl: String = "",
+    // Campos agregados para Diseño v3
+    val comision: Double = 0.0,
+    val esNuevo: Boolean = false,
+    val volumen: String = "",
+    val especificaciones: String = "",
+    val resenas_promedio: Double = 0.0,
+    val resenas_cantidad: Int = 0
 )

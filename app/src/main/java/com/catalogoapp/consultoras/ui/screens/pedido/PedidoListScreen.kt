@@ -3,6 +3,9 @@ package com.catalogoapp.consultoras.ui.screens.pedido
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,9 +19,11 @@ import com.catalogoapp.consultoras.viewmodel.PedidoViewModel
 fun PedidoListScreen(
     viewModel: PedidoViewModel,
     onVolver: () -> Unit,
-    onNuevoPedido: () -> Unit
+    onNuevoPedido: () -> Unit,
+    onRastrearPedido: (String) -> Unit
 ) {
     val estado by viewModel.uiState.collectAsState()
+
 
     LaunchedEffect(Unit) {
         viewModel.cargarPedidos()
@@ -69,7 +74,8 @@ fun PedidoListScreen(
                     pedido = pedido,
                     siguienteEstado = viewModel.siguienteEstadoDe(pedido.estado),
                     actualizando = estado.actualizandoId == pedido.id,
-                    onAvanzarEstado = { viewModel.avanzarEstado(pedido) }
+                    onAvanzarEstado = { viewModel.avanzarEstado(pedido) },
+                    onRastrear = { onRastrearPedido(pedido.id.toString()) }
                 )
             }
         }
@@ -81,7 +87,8 @@ private fun TarjetaPedido(
     pedido: PedidoResponse,
     siguienteEstado: String?,
     actualizando: Boolean,
-    onAvanzarEstado: () -> Unit
+    onAvanzarEstado: () -> Unit,
+    onRastrear: () -> Unit
 ) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(14.dp)) {
@@ -102,6 +109,20 @@ private fun TarjetaPedido(
                 "$totalUnidades unidad(es) de ${pedido.items.size} productos"
             }
             Text("$textoProductos - S/ ${"%.2f".format(pedido.total)}", style = MaterialTheme.typography.bodyMedium)
+
+            // BOTÓN DE RASTREO: Solo aparece si el pedido está ENVIADO o EN RUTA
+            if (pedido.estado == "ENVIADO" || pedido.estado == "EN RUTA") {
+                Spacer(modifier = Modifier.height(10.dp))
+                OutlinedButton(
+                    onClick = onRastrear,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(Icons.Default.LocalShipping, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Rastrear Pedido", style = MaterialTheme.typography.bodySmall)
+                }
+            }
 
             if (siguienteEstado != null) {
                 Spacer(modifier = Modifier.height(10.dp))

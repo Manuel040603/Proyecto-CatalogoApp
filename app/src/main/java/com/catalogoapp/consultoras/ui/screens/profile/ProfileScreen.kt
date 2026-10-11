@@ -46,7 +46,10 @@ fun ProfileScreen(
     onIrAPedidos: () -> Unit = {},
     onIrAReparto: () -> Unit = {},
     onIrAAgregarProducto: () -> Unit = {},
-    onIrADevolucion: () -> Unit = {}
+    onIrADevolucion: () -> Unit = {},
+    onIrAProgreso: () -> Unit = {},
+    onIrAAjustesIA: () -> Unit = {},
+    onIrAApariencia: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val estado by viewModel.uiState.collectAsState()
@@ -80,7 +83,7 @@ fun ProfileScreen(
         ) {
             Spacer(modifier = Modifier.height(60.dp))
 
-            // Header Minimalista Asimétrico
+            // Cabecera v3
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -120,93 +123,48 @@ fun ProfileScreen(
                         color = MaterialTheme.colorScheme.onBackground
                     )
                     Text(
-                        text = usuario.email ?: "",
+                        text = "${perfilCargado?.rol ?: "Consultora"} · Nivel ${perfilCargado?.nivel ?: "Plata"}",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    Surface(
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text(
-                            when {
-                                esAdmin -> "Administrador ⭐"
-                                perfilCargado?.activo == false -> "Inactiva"
-                                else -> "Consultora activa"
-                            },
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
                 }
             }
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Stats Section (Flat Design)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                FlatStatItem(
-                    modifier = Modifier.weight(1f),
-                    label = "Ventas",
-                    value = if (estadisticas.cargando) "..." else "S/ ${"%.2f".format(estadisticas.ventasTotales)}",
-                    icon = Icons.Default.AttachMoney
+            // Menú de Opciones v3 (Filas con subtítulos)
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                ProfileMenuOption(
+                    label = "Datos y dirección",
+                    sublabel = "DNI, celular, entrega y comprobante",
+                    icon = Icons.Default.Person,
+                    onClick = onIrAEditarPerfil
                 )
-                FlatStatItem(
-                    modifier = Modifier.weight(1f),
-                    label = "Pedidos",
-                    value = if (estadisticas.cargando) "..." else "${estadisticas.totalPedidos}",
-                    icon = Icons.Default.List
+                ProfileMenuOption(
+                    label = "Mi progreso",
+                    sublabel = "${perfilCargado?.nivel ?: "Plata"} · ${ (perfilCargado?.progreso ?: 0.0) * 100 }%",
+                    icon = Icons.Default.TrendingUp,
+                    onClick = onIrAProgreso
                 )
-                FlatStatItem(
-                    modifier = Modifier.weight(1f),
-                    label = "Entregados",
-                    value = if (estadisticas.cargando) "..." else "${estadisticas.pedidosEntregados}",
-                    icon = Icons.Default.Star
+                ProfileMenuOption(
+                    label = "Capacitación",
+                    sublabel = "Lecciones y Quizzes",
+                    icon = Icons.Default.School,
+                    onClick = onIrACapacitaciones
+                )
+                ProfileMenuOption(
+                    label = "Asistente IA",
+                    sublabel = "Círculo y funciones",
+                    icon = Icons.Default.AutoAwesome,
+                    onClick = onIrAAjustesIA
+                )
+                ProfileMenuOption(
+                    label = "Apariencia",
+                    sublabel = "Claro, oscuro o negro",
+                    icon = Icons.Default.Palette,
+                    onClick = onIrAApariencia
                 )
             }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Botón Editar Perfil
-            OutlinedButton(
-                onClick = onIrAEditarPerfil,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                shape = RoundedCornerShape(16.dp),
-                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
-            ) {
-                Icon(Icons.Default.Edit, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Editar Perfil", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Soporte y Ajustes (Sustituye a Gestión)
-            Text(
-                "Soporte y Ajustes",
-                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
-            )
-
-            ProfileActionItem(
-                label = "Centro de Ayuda",
-                icon = Icons.Default.Help,
-                onClick = { /* Implementar ayuda */ }
-            )
-            ProfileActionItem(
-                label = "Términos y Condiciones",
-                icon = Icons.Default.Description,
-                onClick = { /* Implementar términos */ }
-            )
 
             Spacer(modifier = Modifier.height(40.dp))
 
@@ -234,6 +192,42 @@ fun ProfileScreen(
                 else -> {}
             }
         }
+    }
+}
+
+@Composable
+fun ProfileMenuOption(
+    label: String,
+    sublabel: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .clickable { onClick() }
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(label, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold))
+            Text(sublabel, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Icon(
+            Icons.Default.KeyboardArrowRight,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.outline,
+            modifier = Modifier.size(20.dp)
+        )
     }
 }
 

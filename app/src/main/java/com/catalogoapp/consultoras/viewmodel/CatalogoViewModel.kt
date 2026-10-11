@@ -61,5 +61,9 @@ class CatalogoViewModel @JvmOverloads constructor(
         }
     }
 
+    fun obtenerProductoPorId(id: String): Producto? {
+        return todosLosProductos.find { it.id == id }
+    }
+
     fun categoriasDisponibles(): List<String> = todosLosProductos.map { it.categoria }.distinct()
 }

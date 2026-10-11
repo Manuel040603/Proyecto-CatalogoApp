@@ -13,6 +13,10 @@ import kotlinx.coroutines.launch
 
 data class HomeUiState(
     val nombre: String = "",
+    val rol: String = "Consultora",
+    val nivel: String = "Plata",
+    val progreso: Double = 0.0,
+    val mensajeProgreso: String = "Cargando progreso...",
     val cargandoResumen: Boolean = true,
     val ventasTotales: Double = 0.0,
     val totalPedidos: Int = 0,
@@ -34,7 +38,13 @@ class HomeViewModel @JvmOverloads constructor(
 
         viewModelScope.launch {
             val perfil = profileRepository.obtenerPerfil(uid).getOrNull()
-            _uiState.value = _uiState.value.copy(nombre = perfil?.nombre ?: "")
+            _uiState.value = _uiState.value.copy(
+                nombre = perfil?.nombre ?: "",
+                rol = perfil?.rol ?: "Consultora",
+                nivel = perfil?.nivel ?: "Plata",
+                progreso = perfil?.progreso ?: 0.0,
+                mensajeProgreso = "Te faltan S/ ${ (1000 - (perfil?.progreso ?: 0.0) * 10).toInt() } para Nivel Oro"
+            )
         }
 
         viewModelScope.launch {
@@ -56,7 +66,7 @@ class HomeViewModel @JvmOverloads constructor(
             productRepository.observarCatalogo()
                 .catch { }
                 .collect { productos ->
-                    _uiState.value = _uiState.value.copy(productosDestacados = productos.take(3))
+                    _uiState.value = _uiState.value.copy(productosDestacados = productos.take(4))
                 }
         }
     }

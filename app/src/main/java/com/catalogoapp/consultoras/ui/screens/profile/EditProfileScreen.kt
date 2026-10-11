@@ -41,7 +41,12 @@ fun EditProfileScreen(
 ) {
     val context = LocalContext.current
     var nombre by remember { mutableStateOf("") }
-    var metaMensual by remember { mutableStateOf("") }
+    var dni by remember { mutableStateOf("") }
+    var celular by remember { mutableStateOf("") }
+    var direccion by remember { mutableStateOf("") }
+    var distrito by remember { mutableStateOf("") }
+    var referencia by remember { mutableStateOf("") }
+    var tipoComprobante by remember { mutableStateOf("Boleta") }
     var fotoNueva by remember { mutableStateOf<Bitmap?>(null) }
     val estado by viewModel.uiState.collectAsState()
     val perfilCargado by viewModel.perfil.collectAsState()
@@ -53,7 +58,12 @@ fun EditProfileScreen(
     LaunchedEffect(perfilCargado) {
         perfilCargado?.let { perfil ->
             nombre = perfil.nombre
-            metaMensual = perfil.preferencias // Usando preferencias como meta mensual
+            dni = perfil.dni
+            celular = perfil.celular
+            direccion = perfil.direccionEntrega
+            distrito = perfil.distrito
+            referencia = perfil.referencia
+            tipoComprobante = perfil.tipoComprobante
         }
     }
 
@@ -79,7 +89,6 @@ fun EditProfileScreen(
     ) {
         Spacer(modifier = Modifier.height(48.dp))
 
-        // Botón Volver
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterStart) {
             IconButton(onClick = onVolver) {
                 Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
@@ -89,7 +98,7 @@ fun EditProfileScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            "Editar Perfil",
+            "Datos y Dirección",
             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.ExtraBold),
             color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.align(Alignment.Start)
@@ -97,20 +106,16 @@ fun EditProfileScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Cambio de Foto
+        // Foto de Perfil
         Box(
             modifier = Modifier
-                .size(140.dp)
+                .size(120.dp)
                 .clip(CircleShape)
                 .clickable {
                     val permisoOk = ContextCompat.checkSelfPermission(
                         context, Manifest.permission.CAMERA
                     ) == PackageManager.PERMISSION_GRANTED
-                    if (permisoOk) {
-                        lanzadorCamara.launch(null)
-                    } else {
-                        lanzadorPermisoCamara.launch(Manifest.permission.CAMERA)
-                    }
+                    if (permisoOk) lanzadorCamara.launch(null) else lanzadorPermisoCamara.launch(Manifest.permission.CAMERA)
                 },
             contentAlignment = Alignment.Center
         ) {
@@ -119,58 +124,110 @@ fun EditProfileScreen(
                 Image(
                     bitmap = fotoAMostrar.asImageBitmap(),
                     contentDescription = "Foto de perfil",
-                    modifier = Modifier.fillMaxSize().clip(CircleShape)
+                    modifier = Modifier.fillMaxSize().clip(CircleShape),
+                    contentScale = androidx.compose.ui.layout.ContentScale.Crop
                 )
             } else {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = null,
-                    modifier = Modifier.size(80.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                Icon(Icons.Default.Person, contentDescription = null, modifier = Modifier.size(60.dp), tint = MaterialTheme.colorScheme.primary)
             }
-
-            // Overlay de cámara
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .size(36.dp)
+                    .size(32.dp)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.primary)
-                    .border(2.dp, Color.White, CircleShape)
-                    .clickable {
-                        val permisoOk = ContextCompat.checkSelfPermission(
-                            context, Manifest.permission.CAMERA
-                        ) == PackageManager.PERMISSION_GRANTED
-                        if (permisoOk) lanzadorCamara.launch(null) else lanzadorPermisoCamara.launch(Manifest.permission.CAMERA)
-                    },
+                    .border(2.dp, Color.White, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Default.PhotoCamera, contentDescription = null, modifier = Modifier.size(18.dp), tint = Color.White)
+                Icon(Icons.Default.PhotoCamera, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
             }
         }
 
-        Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
-        // Formulario
+        Text("Información Personal", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold), modifier = Modifier.align(Alignment.Start), color = MaterialTheme.colorScheme.primary)
+        Spacer(modifier = Modifier.height(12.dp))
+
         OutlinedTextField(
             value = nombre,
             onValueChange = { nombre = it },
-            label = { Text("Nombre completo") },
+            label = { Text("Nombres y Apellidos") },
             singleLine = true,
-            shape = RoundedCornerShape(16.dp),
+            shape = RoundedCornerShape(12.dp),
             modifier = Modifier.fillMaxWidth()
         )
+        Spacer(modifier = Modifier.height(12.dp))
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            OutlinedTextField(
+                value = dni,
+                onValueChange = { if (it.length <= 8) dni = it },
+                label = { Text("DNI") },
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.weight(1f)
+            )
+            OutlinedTextField(
+                value = celular,
+                onValueChange = { celular = it },
+                label = { Text("Celular") },
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text("Dirección de Entrega", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold), modifier = Modifier.align(Alignment.Start), color = MaterialTheme.colorScheme.primary)
+        Spacer(modifier = Modifier.height(12.dp))
 
         OutlinedTextField(
-            value = metaMensual,
-            onValueChange = { metaMensual = it },
-            label = { Text("Meta Mensual / Preferencias") },
+            value = direccion,
+            onValueChange = { direccion = it },
+            label = { Text("Dirección completa") },
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp)
+            shape = RoundedCornerShape(12.dp)
         )
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            OutlinedTextField(
+                value = distrito,
+                onValueChange = { distrito = it },
+                label = { Text("Distrito") },
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.weight(1f)
+            )
+            OutlinedTextField(
+                value = referencia,
+                onValueChange = { referencia = it },
+                label = { Text("Referencia") },
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text("Tipo de Comprobante", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold), modifier = Modifier.align(Alignment.Start), color = MaterialTheme.colorScheme.primary)
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            listOf("Boleta", "Factura").forEach { tipo ->
+                FilterChip(
+                    selected = tipoComprobante == tipo,
+                    onClick = { tipoComprobante = tipo },
+                    label = { Text(tipo) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer
+                    )
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.height(40.dp))
 
@@ -182,7 +239,7 @@ fun EditProfileScreen(
                     uid = usuario.uid,
                     email = usuario.email ?: "",
                     nombre = nombre,
-                    preferencias = metaMensual,
+                    preferencias = "",
                     fotoBase64 = fotoParaGuardar
                 )
                 onVolver()
@@ -197,7 +254,6 @@ fun EditProfileScreen(
                 Text("Guardar Cambios", fontWeight = FontWeight.Bold)
             }
         }
-
         Spacer(modifier = Modifier.height(40.dp))
     }
 }

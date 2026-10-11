@@ -5,7 +5,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -21,12 +26,24 @@ import com.catalogoapp.consultoras.ui.screens.capacitacion.CapacitacionDetalleSc
 import com.catalogoapp.consultoras.ui.screens.capacitacion.CapacitacionListScreen
 import com.catalogoapp.consultoras.ui.screens.capacitacion.NuevaCapacitacionScreen
 import com.catalogoapp.consultoras.ui.screens.catalogo.CatalogoScreen
+import com.catalogoapp.consultoras.ui.screens.catalogo.DetalleProductoScreen
+import com.catalogoapp.consultoras.ui.screens.reparto.SeguimientoPedidoScreen
 import com.catalogoapp.consultoras.ui.screens.devolucion.DevolucionScreen
 import com.catalogoapp.consultoras.ui.screens.home.HomeScreen
 import com.catalogoapp.consultoras.ui.screens.main.MainScreen
 import com.catalogoapp.consultoras.ui.screens.pedido.NuevoPedidoScreen
 import com.catalogoapp.consultoras.ui.screens.pedido.PedidoListScreen
+import com.catalogoapp.consultoras.ui.screens.profile.AppearanceScreen
 import com.catalogoapp.consultoras.ui.screens.profile.ProfileScreen
+import com.catalogoapp.consultoras.util.ThemeManager
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.getValue
+
 import com.catalogoapp.consultoras.ui.screens.profile.EditProfileScreen
 import com.catalogoapp.consultoras.ui.screens.reparto.CrearRepartoScreen
 import com.catalogoapp.consultoras.ui.screens.reparto.ListaRepartosScreen
@@ -41,8 +58,11 @@ object Rutas {
     const val HOME = "home"
     const val PERFIL = "perfil"
     const val EDITAR_PERFIL = "editar_perfil"
+    const val APARIENCIA = "apariencia"
+    const val SEGUIMIENTO_PEDIDO = "seguimiento_pedido"
 
     const val CATALOGO = "catalogo"
+    const val DETALLE_PRODUCTO = "detalle_producto"
     const val DEVOLUCION = "devolucion"
     const val CAPACITACIONES = "capacitaciones"
     const val NUEVA_CAPACITACION = "nueva_capacitacion"
@@ -66,10 +86,22 @@ private fun PantallaConEspacioSuperior(contenido: @Composable () -> Unit) {
 @Composable
 fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
     val navController: NavHostController = rememberNavController()
+    val context = LocalContext.current
     val profileViewModel = remember { ProfileViewModel() }
     val pedidoViewModel = remember { PedidoViewModel() }
     val repartoViewModel = remember { RepartoViewModel() }
     val homeViewModel = remember { HomeViewModel() }
+    // Simplificamos el manejo del tema para evitar bloqueos al inicio
+    var currentTheme by remember { mutableStateOf("system") }
+    val scope = rememberCoroutineScope()
+    val themeManager = remember { ThemeManager(context) }
+
+    LaunchedEffect(Unit) {
+        themeManager.themeFlow.collect { theme ->
+            currentTheme = theme
+        }
+    }
+
 
     val destinoInicial = if (authViewModel.usuarioActual != null) Rutas.HOME else Rutas.LOGIN
 
@@ -143,7 +175,8 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
                         onIrAPedidos = { navController.navigate(Rutas.PEDIDOS) },
                         onIrAReparto = { navController.navigate(Rutas.LISTA_REPARTOS) },
                         onIrAAgregarProducto = { navController.navigate(Rutas.AGREGAR_PRODUCTO) },
-                        onIrADevolucion = { navController.navigate(Rutas.DEVOLUCION) }
+                        onIrADevolucion = { navController.navigate(Rutas.DEVOLUCION) },
+                        onIrAApariencia = { navController.navigate(Rutas.APARIENCIA) }
                     )
                 }
             }
@@ -164,6 +197,20 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
             }
         }
 
+        composable(Rutas.APARIENCIA) {
+            PantallaConEspacioSuperior {
+                AppearanceScreen(
+                    currentTheme = currentTheme,
+                    onThemeSelected = { tema ->
+                        scope.launch {
+                            themeManager.setTheme(tema)
+                        }
+                    },
+                    onVolver = { navController.popBackStack() }
+                )
+            }
+        }
+
         composable(Rutas.AGREGAR_PRODUCTO) {
             val agregarProductoViewModel = remember { AgregarProductoViewModel() }
             PantallaConEspacioSuperior {
@@ -179,7 +226,10 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
                 PedidoListScreen(
                     viewModel = pedidoViewModel,
                     onVolver = { navController.popBackStack() },
-                    onNuevoPedido = { navController.navigate(Rutas.NUEVO_PEDIDO) }
+                    onNuevoPedido = { navController.navigate(Rutas.NUEVO_PEDIDO) },
+                    onRastrearPedido = { pedidoId ->
+                        navController.navigate("${Rutas.SEGUIMIENTO_PEDIDO}/$pedidoId")
+                    }
                 )
             }
         }
@@ -189,7 +239,13 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
                 NuevoPedidoScreen(
                     viewModel = pedidoViewModel,
                     onVolver = { navController.popBackStack() },
-                    onPedidoCreado = { navController.popBackStack() }
+                    onPedidoCreado = {
+                        // Navegamos al seguimiento del pedido recién creado
+                        // Por ahora usamos un ID genérico "1048" para demo
+                        navController.navigate("${Rutas.SEGUIMIENTO_PEDIDO}/1048") {
+                            popUpTo(Rutas.NUEVO_PEDIDO) { inclusive = true }
+                        }
+                    }
                 )
             }
         }
@@ -238,7 +294,55 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
             MainScreen(navController = navController) {
                 CatalogoScreen(
                     viewModel = catalogoViewModel,
-                    onVolver = { navController.popBackStack() }
+                    onVolver = { navController.popBackStack() },
+                    onProductoClick = { producto ->
+                        navController.navigate("${Rutas.DETALLE_PRODUCTO}/${producto.id}")
+                    }
+                )
+            }
+        }
+
+        composable(
+            route = "${Rutas.DETALLE_PRODUCTO}/{productoId}",
+            arguments = listOf(navArgument("productoId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val productoId = backStackEntry.arguments?.getString("productoId") ?: ""
+            val catalogoViewModel = remember { CatalogoViewModel() }
+            // Obtenemos el producto por ID desde el ViewModel
+            val producto = remember(productoId) {
+                catalogoViewModel.obtenerProductoPorId(productoId)
+            }
+
+            if (producto != null) {
+                PantallaConEspacioSuperior {
+                    DetalleProductoScreen(
+                        producto = producto,
+                        onVolver = { navController.popBackStack() },
+                        onAgregarAlPedido = { prod, vol ->
+                            // Aquí conectaremos con el PedidoViewModel más adelante
+                            println("Agregar al pedido: ${prod.nombre} - $vol")
+                        }
+                    )
+                }
+            } else {
+                // Pantalla de carga o error si no encuentra el producto
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
+        }
+
+        composable(
+            route = "${Rutas.SEGUIMIENTO_PEDIDO}/{pedidoId}",
+            arguments = listOf(navArgument("pedidoId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val pedidoId = backStackEntry.arguments?.getString("pedidoId") ?: ""
+            MainScreen(navController = navController) {
+                SeguimientoPedidoScreen(
+                    pedidoId = pedidoId,
+                    reparto = null,
+                    onVolver = { navController.popBackStack() },
+                    onReportarProblema = { /* Abrir formulario de reclamo */ }
                 )
             }
         }

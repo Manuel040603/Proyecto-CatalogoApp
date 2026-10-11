@@ -59,12 +59,38 @@ private val DarkColors = darkColorScheme(
     outline = Color(0xFF9E8D90)
 )
 
+private val BlackColors = darkColorScheme(
+    primary = Color(0xFFD81B60),
+    onPrimary = Color(0xFFFFFFFF),
+    primaryContainer = Color(0xFF4A001F),
+    onPrimaryContainer = Color(0xFFFFD9E4),
+    background = Color(0xFF000000),
+    onBackground = Color(0xFFFFFFFF),
+    surface = Color(0xFF000000),
+    onSurface = Color(0xFFFFFFFF),
+    surfaceVariant = Color(0xFF1A1A1A),
+    onSurfaceVariant = Color(0xFFBDBDBD),
+    outline = Color(0xFF333333)
+)
+
 @Composable
 fun CatalogoAppTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    theme: String = "system",
     content: @Composable () -> Unit
 ) {
-    val colors = if (darkTheme) DarkColors else LightColors
+    val darkTheme = when (theme) {
+        "dark" -> true
+        "black" -> true
+        "light" -> false
+        else -> isSystemInDarkTheme()
+    }
+
+    val colors = when (theme) {
+        "light" -> LightColors
+        "dark" -> DarkColors
+        "black" -> BlackColors
+        else -> if (darkTheme) DarkColors else LightColors
+    }
 
     val view = androidx.compose.ui.platform.LocalView.current
     if (!view.isInEditMode) {

@@ -1,3 +1,10 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <style name="Theme.CatalogoApp" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <!-- Tema para el Splash Screen -->
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/ic_launcher_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="postSplashScreenTheme">@style/Theme.CatalogoApp</item>
+    </style>
 </resources>
