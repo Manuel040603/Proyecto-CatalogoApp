@@ -108,7 +108,7 @@ class PedidoDetalleRepository {
             coleccion.document(detalle.pedidoId.toString()).set(detalle).await()
             true
         }
-        if (terminado == true) Result.success(Unit) else Result.failure(Exception("Firebase no respondio a tiempo"))
+        if (terminado == true) Result.success(Unit) else Result.failure(Exception("Firebase no respondió a tiempo"))
     } catch (e: Exception) {
         Result.failure(e)
     }
@@ -118,7 +118,7 @@ class PedidoDetalleRepository {
             coleccion.whereEqualTo("uidConsultora", uid).get().await()
         }
         if (snapshot == null) {
-            Result.failure(Exception("Firebase no respondio a tiempo"))
+            Result.failure(Exception("Firebase no respondió a tiempo"))
         } else {
             val mapa = snapshot.documents
                 .mapNotNull { it.toObject(PedidoDetalle::class.java) }
@@ -134,7 +134,7 @@ class PedidoDetalleRepository {
             coleccion.get().await()
         }
         if (snapshot == null) {
-            Result.failure(Exception("Firebase no respondio a tiempo"))
+            Result.failure(Exception("Firebase no respondió a tiempo"))
         } else {
             Result.success(
                 snapshot.documents
@@ -160,7 +160,7 @@ class PedidoDetalleRepository {
                 .await()
             true
         }
-        if (terminado == true) Result.success(Unit) else Result.failure(Exception("Firebase no respondio a tiempo"))
+        if (terminado == true) Result.success(Unit) else Result.failure(Exception("Firebase no respondió a tiempo"))
     } catch (e: Exception) {
         Result.failure(e)
     }
@@ -180,7 +180,7 @@ class DevolucionRepository {
             documento.set(devolucion.copy(id = documento.id)).await()
             true
         }
-        if (terminado == true) Result.success(Unit) else Result.failure(Exception("Firebase no respondio a tiempo"))
+        if (terminado == true) Result.success(Unit) else Result.failure(Exception("Firebase no respondió a tiempo"))
     } catch (e: Exception) {
         Result.failure(e)
     }
@@ -190,7 +190,7 @@ class DevolucionRepository {
             coleccion.whereEqualTo("uidConsultora", uid).get().await()
         }
         if (snapshot == null) {
-            Result.failure(Exception("Firebase no respondio a tiempo"))
+            Result.failure(Exception("Firebase no respondió a tiempo"))
         } else {
             Result.success(
                 snapshot.documents
@@ -207,7 +207,7 @@ class DevolucionRepository {
             coleccion.get().await()
         }
         if (snapshot == null) {
-            Result.failure(Exception("Firebase no respondio a tiempo"))
+            Result.failure(Exception("Firebase no respondió a tiempo"))
         } else {
             Result.success(
                 snapshot.documents
@@ -256,7 +256,7 @@ class ClienteRepository {
             coleccion.whereEqualTo("uidConsultora", uid).get().await()
         }
         if (snapshot == null) {
-            Result.failure(Exception("Firebase no respondio a tiempo"))
+            Result.failure(Exception("Firebase no respondió a tiempo"))
         } else {
             Result.success(
                 snapshot.documents
@@ -289,7 +289,7 @@ class ClienteRepository {
             coleccion.document(id).set(datos, SetOptions.merge()).await()
             true
         }
-        if (terminado == true) Result.success(Unit) else Result.failure(Exception("Firebase no respondio a tiempo"))
+        if (terminado == true) Result.success(Unit) else Result.failure(Exception("Firebase no respondió a tiempo"))
     } catch (e: Exception) {
         Result.failure(e)
     }

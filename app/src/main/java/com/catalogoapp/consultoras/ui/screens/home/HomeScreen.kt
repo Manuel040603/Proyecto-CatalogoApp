@@ -220,7 +220,7 @@ fun HomeScreen(
                     }
                     if (estado.productosStockBajo.size > 5) {
                         Text(
-                            "y ${estado.productosStockBajo.size - 5} mas en Perfil, Administrar productos",
+                            "y ${estado.productosStockBajo.size - 5} más en Perfil, Administrar productos",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onErrorContainer
                         )
@@ -429,7 +429,7 @@ private fun DialogoCampana(
                 OutlinedTextField(
                     value = titulo,
                     onValueChange = { titulo = it },
-                    label = { Text("Titulo") },
+                    label = { Text("Título") },
                     modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(

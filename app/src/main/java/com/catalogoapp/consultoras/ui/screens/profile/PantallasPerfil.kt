@@ -497,9 +497,9 @@ fun EditProfileScreen(
         Button(
             onClick = {
                 val problema = when {
-                    dni.isNotEmpty() && dni.length != 8 -> "El DNI debe tener 8 digitos"
+                    dni.isNotEmpty() && dni.length != 8 -> "El DNI debe tener 8 dígitos"
                     celular.isNotEmpty() && PedidoValidacion.validarCelular(celular) != null ->
-                        "El celular debe tener 9 digitos y empezar con 9"
+                        "El celular debe tener 9 dígitos y empezar con 9"
                     else -> null
                 }
                 if (problema != null) {

@@ -190,7 +190,7 @@ class PedidoViewModel @JvmOverloads constructor(
                 if (_uiState.value.tipoEntrega != PedidoValidacion.ENTREGA_CONSULTORA) return@launch
                 if (perfil == null || perfil.direccionEntrega.isBlank() || perfil.distrito.isBlank()) {
                     _uiState.value = _uiState.value.copy(
-                        error = "Primero completa tu direccion y distrito en Perfil, Datos y direccion"
+                        error = "Primero completa tu dirección y distrito en Perfil, Datos y dirección"
                     )
                 } else {
                     _uiState.value = _uiState.value.copy(
@@ -266,10 +266,10 @@ class PedidoViewModel @JvmOverloads constructor(
         PedidoValidacion.validarDocumento(estado.tipoDocumento, estado.numeroDocumento, estado.razonSocial)?.let { return it }
         if (estado.tipoEntrega == PedidoValidacion.ENTREGA_CONSULTORA) {
             if (estado.direccion.isBlank() || estado.distrito.isBlank()) {
-                return "Completa tu direccion y distrito en Perfil, Datos y direccion"
+                return "Completa tu dirección y distrito en Perfil, Datos y dirección"
             }
         } else {
-            if (estado.direccion.isBlank()) return "Ingresa la direccion de entrega del cliente"
+            if (estado.direccion.isBlank()) return "Ingresa la dirección de entrega del cliente"
             if (estado.distrito.isBlank()) return "Ingresa el distrito de entrega del cliente"
         }
         PedidoValidacion.validarFechaEntrega(estado.fechaEntrega)?.let { return it }
@@ -346,7 +346,7 @@ class PedidoViewModel @JvmOverloads constructor(
             )
             val guardado = detalleRepository.guardar(detalle)
             val avisoDetalle = guardado.exceptionOrNull()?.let {
-                "El pedido se registro, pero los datos de entrega no se guardaron en Firebase: ${MensajeError.de(it, "error desconocido")}"
+                "El pedido se registró, pero los datos de entrega no se guardaron en Firebase: ${MensajeError.de(it, "error desconocido")}"
             }
 
             val uidCliente = detalle.uidConsultora
@@ -461,7 +461,7 @@ class RepartoViewModel @JvmOverloads constructor(
     init {
         viewModelScope.launch {
             repartidorRepository.observar()
-                .catch { excepcion -> _uiState.value = _uiState.value.copy(error = MensajeError.de(excepcion, "Ocurrio un error")) }
+                .catch { excepcion -> _uiState.value = _uiState.value.copy(error = MensajeError.de(excepcion, "Ocurrió un error")) }
                 .collect { lista ->
                     _uiState.value = _uiState.value.copy(repartidores = lista)
                     asignarAutomaticamente()
@@ -499,7 +499,7 @@ class RepartoViewModel @JvmOverloads constructor(
 
     fun agregarRepartidor(nombre: String, vehiculo: String, telefono: String) {
         if (nombre.isBlank() || vehiculo.isBlank()) {
-            _uiState.value = _uiState.value.copy(error = "El repartidor necesita nombre y placa del vehiculo")
+            _uiState.value = _uiState.value.copy(error = "El repartidor necesita nombre y placa del vehículo")
             return
         }
         viewModelScope.launch {
@@ -507,7 +507,7 @@ class RepartoViewModel @JvmOverloads constructor(
                 Repartidor(nombre = nombre.trim(), vehiculo = vehiculo.trim().uppercase(), telefono = telefono.trim())
             )
             resultado.exceptionOrNull()?.let { excepcion ->
-                _uiState.value = _uiState.value.copy(error = MensajeError.de(excepcion, "Ocurrio un error"))
+                _uiState.value = _uiState.value.copy(error = MensajeError.de(excepcion, "Ocurrió un error"))
             }
         }
     }
@@ -518,7 +518,7 @@ class RepartoViewModel @JvmOverloads constructor(
             val resultado = pedidoRepository.listarPedidos()
             val lista = resultado.getOrNull()
             if (lista == null) {
-                _uiState.value = _uiState.value.copy(cargandoPedidos = false, error = MensajeError.de(resultado.exceptionOrNull(), "Ocurrio un error"))
+                _uiState.value = _uiState.value.copy(cargandoPedidos = false, error = MensajeError.de(resultado.exceptionOrNull(), "Ocurrió un error"))
                 return@launch
             }
 
@@ -544,7 +544,7 @@ class RepartoViewModel @JvmOverloads constructor(
                 pedidosDisponibles = disponibles,
                 choferesOcupados = choferesOcupados,
                 pedidosSeleccionados = _uiState.value.pedidosSeleccionados.filter { id -> disponibles.any { it.id == id } }.toSet(),
-                error = if (resumenes == null) "No se pudo verificar que repartidores estan ocupados" else null
+                error = if (resumenes == null) "No se pudo verificar que repartidores están ocupados" else null
             )
             asignarAutomaticamente()
         }
@@ -598,7 +598,7 @@ class RepartoViewModel @JvmOverloads constructor(
                 error = if (faltaRepartidor) {
                     "No hay un repartidor disponible. Registra uno o espera a que termine su reparto en curso"
                 } else {
-                    "Completa zona, direccion de origen y selecciona al menos un pedido"
+                    "Completa zona, dirección de origen y selecciona al menos un pedido"
                 }
             )
             return
@@ -626,7 +626,7 @@ class RepartoViewModel @JvmOverloads constructor(
             val resultado = repartoRepository.listarRepartos()
             _uiState.value = resultado.fold(
                 onSuccess = { lista -> _uiState.value.copy(cargandoRepartos = false, repartos = lista, error = null) },
-                onFailure = { excepcion -> _uiState.value.copy(cargandoRepartos = false, error = MensajeError.de(excepcion, "Ocurrio un error")) }
+                onFailure = { excepcion -> _uiState.value.copy(cargandoRepartos = false, error = MensajeError.de(excepcion, "Ocurrió un error")) }
             )
         }
     }
@@ -637,7 +637,7 @@ class RepartoViewModel @JvmOverloads constructor(
             val resultado = repartoRepository.obtenerReparto(id)
             _uiState.value = resultado.fold(
                 onSuccess = { reparto -> _uiState.value.copy(cargandoReparto = false, repartoActual = reparto, error = null) },
-                onFailure = { excepcion -> _uiState.value.copy(cargandoReparto = false, error = MensajeError.de(excepcion, "Ocurrio un error")) }
+                onFailure = { excepcion -> _uiState.value.copy(cargandoReparto = false, error = MensajeError.de(excepcion, "Ocurrió un error")) }
             )
         }
     }
@@ -650,7 +650,7 @@ class RepartoViewModel @JvmOverloads constructor(
                 onSuccess = {
                     _uiState.value.copy(actualizandoParadaId = null)
                 },
-                onFailure = { excepcion -> _uiState.value.copy(actualizandoParadaId = null, error = MensajeError.de(excepcion, "Ocurrio un error")) }
+                onFailure = { excepcion -> _uiState.value.copy(actualizandoParadaId = null, error = MensajeError.de(excepcion, "Ocurrió un error")) }
             )
             if (resultado.isSuccess) {
                 cargarReparto(idReparto)
@@ -743,7 +743,7 @@ class AdminProductosViewModel @JvmOverloads constructor(
                 .catch { excepcion ->
                     _uiState.value = _uiState.value.copy(
                         cargando = false,
-                        error = MensajeError.de(excepcion, "No se pudo cargar el catalogo")
+                        error = MensajeError.de(excepcion, "No se pudo cargar el catálogo")
                     )
                 }
                 .collect { productos ->
@@ -769,13 +769,13 @@ class AdminProductosViewModel @JvmOverloads constructor(
         val stockNumero = stock.toIntOrNull()
         val comisionNumero = if (comision.isBlank()) 0.0 else comision.replace(',', '.').toDoubleOrNull()
         val problema = when {
-            nombre.isBlank() -> "El nombre no puede estar vacio"
-            categoria.isBlank() -> "La categoria no puede estar vacia"
-            precioNumero == null || precioNumero <= 0.0 -> "El precio debe ser un numero mayor a 0"
-            stockNumero == null || stockNumero < 0 -> "El stock debe ser un numero entero, 0 o mas"
-            comisionNumero == null || comisionNumero < 0.0 -> "La comision debe ser un numero, 0 o mas"
+            nombre.isBlank() -> "El nombre no puede estar vacío"
+            categoria.isBlank() -> "La categoría no puede estar vacía"
+            precioNumero == null || precioNumero <= 0.0 -> "El precio debe ser un número mayor a 0"
+            stockNumero == null || stockNumero < 0 -> "El stock debe ser un número entero, 0 o más"
+            comisionNumero == null || comisionNumero < 0.0 -> "La comisión debe ser un número, 0 o más"
             precioNumero != null && comisionNumero != null && comisionNumero > precioNumero ->
-                "La comision no puede ser mayor al precio"
+                "La comisión no puede ser mayor al precio"
             else -> null
         }
         if (problema != null) {

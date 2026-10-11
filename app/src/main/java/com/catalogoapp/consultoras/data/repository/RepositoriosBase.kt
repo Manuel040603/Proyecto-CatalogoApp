@@ -47,13 +47,13 @@ class AuthRepository {
             } catch (e: Exception) {
             }
             auth.signOut()
-            throw IllegalStateException("Debes verificar tu correo para entrar. Te reenviamos el mensaje de verificacion.")
+            throw IllegalStateException("Debes verificar tu correo para entrar. Te reenviamos el mensaje de verificación.")
         }
         val perfil = FirebaseFirestore.getInstance().collection("consultoras").document(user.uid).get().await()
             .toObject(ConsultoraProfile::class.java)
         if (perfil != null && !perfil.activo) {
             auth.signOut()
-            throw IllegalStateException("Tu cuenta fue dada de baja. Comunicate con la administracion.")
+            throw IllegalStateException("Tu cuenta fue dada de baja. Comunícate con la administración.")
         }
         Result.success(user)
     } catch (e: Exception) {
@@ -163,12 +163,12 @@ class ProductRepository {
 
     suspend fun sembrarProductosDeEjemplo() {
         val ejemplos = listOf(
-            Producto(nombre = "Labial Mate Rosa", categoria = "Maquillaje", precio = 29.9, descripcion = "Larga duracion", stock = 40, imagenUrl = IMG_LABIAL),
-            Producto(nombre = "Base Liquida Natural", categoria = "Maquillaje", precio = 45.5, descripcion = "Cobertura media", stock = 25, imagenUrl = IMG_BASE),
-            Producto(nombre = "Crema Facial Hidratante", categoria = "Tratamiento facial", precio = 38.0, descripcion = "Con acido hialuronico", stock = 30, imagenUrl = IMG_CREMA),
-            Producto(nombre = "Serum Antiedad", categoria = "Tratamiento facial", precio = 65.0, descripcion = "Con vitamina C", stock = 15, imagenUrl = IMG_SERUM),
+            Producto(nombre = "Labial Mate Rosa", categoria = "Maquillaje", precio = 29.9, descripcion = "Larga duración", stock = 40, imagenUrl = IMG_LABIAL),
+            Producto(nombre = "Base Líquida Natural", categoria = "Maquillaje", precio = 45.5, descripcion = "Cobertura media", stock = 25, imagenUrl = IMG_BASE),
+            Producto(nombre = "Crema Facial Hidratante", categoria = "Tratamiento facial", precio = 38.0, descripcion = "Con ácido hialurónico", stock = 30, imagenUrl = IMG_CREMA),
+            Producto(nombre = "Sérum Antiedad", categoria = "Tratamiento facial", precio = 65.0, descripcion = "Con vitamina C", stock = 15, imagenUrl = IMG_SERUM),
             Producto(nombre = "Perfume Floral 50ml", categoria = "Fragancias", precio = 89.9, descripcion = "Notas florales", stock = 20, imagenUrl = IMG_PERFUME),
-            Producto(nombre = "Vela Aromatica Vainilla", categoria = "Velas", precio = 24.9, descripcion = "40 horas de duracion", stock = 35, imagenUrl = IMG_VELA)
+            Producto(nombre = "Vela Aromática Vainilla", categoria = "Velas", precio = 24.9, descripcion = "40 horas de duración", stock = 35, imagenUrl = IMG_VELA)
         )
         try {
             ejemplos.forEach { producto ->

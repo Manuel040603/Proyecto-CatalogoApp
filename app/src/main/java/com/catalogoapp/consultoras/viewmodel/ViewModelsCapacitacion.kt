@@ -228,7 +228,7 @@ class NuevaCapacitacionViewModel(
     fun guardarCapacitacion() {
         val estado = _uiState.value
         if (!formularioValido()) {
-            _uiState.value = estado.copy(error = "Completa el titulo, el contenido a narrar y las 3 preguntas")
+            _uiState.value = estado.copy(error = "Completa el título, el contenido a narrar y las 3 preguntas")
             return
         }
         _uiState.value = estado.copy(guardando = true, error = null)
@@ -249,7 +249,7 @@ class NuevaCapacitacionViewModel(
             val resultado = repository.crearCapacitacion(capacitacion)
             _uiState.value = resultado.fold(
                 onSuccess = {
-                    NuevaCapacitacionUiState(mensaje = "Capacitacion creada correctamente")
+                    NuevaCapacitacionUiState(mensaje = "Capacitación creada correctamente")
                 },
                 onFailure = {
                     _uiState.value.copy(guardando = false, error = it.message)

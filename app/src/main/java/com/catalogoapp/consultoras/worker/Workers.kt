@@ -81,7 +81,7 @@ class RecordatorioPedidoWorker(
         val notificacion = NotificationCompat.Builder(applicationContext, canalId)
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle("Tienes pedidos pendientes de seguimiento")
-            .setContentText("$cantidadPedidos pedido(s) llevan mas de $DIAS_LIMITE dias en estado PENDIENTE")
+            .setContentText("$cantidadPedidos pedido(s) llevan más de $DIAS_LIMITE días en estado PENDIENTE")
             .setAutoCancel(true)
             .build()
         administrador.notify(ID_NOTIFICACION, notificacion)

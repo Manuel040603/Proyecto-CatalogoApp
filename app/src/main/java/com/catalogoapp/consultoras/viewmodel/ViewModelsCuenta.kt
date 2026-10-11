@@ -64,7 +64,7 @@ class AuthViewModel @JvmOverloads constructor(
             val resultado = repository.iniciarSesion(email, password)
             _uiState.value = resultado.fold(
                 onSuccess = { AuthUiState.Exito("Bienvenida") },
-                onFailure = { AuthUiState.Error(MensajeError.de(it, "Credenciales invalidas")) }
+                onFailure = { AuthUiState.Error(MensajeError.de(it, "Credenciales inválidas")) }
             )
         }
     }
@@ -74,7 +74,7 @@ class AuthViewModel @JvmOverloads constructor(
         viewModelScope.launch {
             val resultado = repository.enviarCorreoRecuperacion(email)
             _uiState.value = resultado.fold(
-                onSuccess = { AuthUiState.Exito("Te enviamos un correo para recuperar tu contrasena") },
+                onSuccess = { AuthUiState.Exito("Te enviamos un correo para recuperar tu contraseña") },
                 onFailure = { AuthUiState.Error(MensajeError.de(it, "No se pudo enviar el correo")) }
             )
         }
@@ -185,7 +185,7 @@ class ProfileViewModel(
                 onSuccess = {
                     _perfil.value = perfil
                     encolarSincronizacion(context, uid, nombre, email, preferencias)
-                    ProfileUiState.Guardado("Perfil guardado y sincronizandose en segundo plano")
+                    ProfileUiState.Guardado("Perfil guardado y sincronizándose en segundo plano")
                 },
                 onFailure = { ProfileUiState.Error(it.message ?: "No se pudo guardar el perfil") }
             )
@@ -300,7 +300,7 @@ class AdminConsultorasViewModel(
                 _uiState.value = _uiState.value.copy(
                     actualizando = false,
                     administradores = nuevos,
-                    mensaje = if (esAdmin) "$limpio ahora es administradora" else "$limpio dejo de ser administradora"
+                    mensaje = if (esAdmin) "$limpio ahora es administradora" else "$limpio dejó de ser administradora"
                 )
             } else {
                 _uiState.value = _uiState.value.copy(
@@ -324,10 +324,10 @@ class AdminConsultorasViewModel(
 
     fun validarEdicion(nombre: String, dni: String, celular: String): String? {
         return when {
-            nombre.isBlank() -> "El nombre no puede estar vacio"
-            dni.isNotEmpty() && dni.length != 8 -> "El DNI debe tener 8 digitos"
+            nombre.isBlank() -> "El nombre no puede estar vacío"
+            dni.isNotEmpty() && dni.length != 8 -> "El DNI debe tener 8 dígitos"
             celular.isNotEmpty() && PedidoValidacion.validarCelular(celular) != null ->
-                "El celular debe tener 9 digitos y empezar con 9"
+                "El celular debe tener 9 dígitos y empezar con 9"
             else -> null
         }
     }

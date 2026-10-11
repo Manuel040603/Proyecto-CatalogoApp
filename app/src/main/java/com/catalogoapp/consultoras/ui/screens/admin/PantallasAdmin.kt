@@ -109,7 +109,7 @@ fun AdminConsultorasScreen(
         }
 
         if (estado.consultoras.isEmpty()) {
-            Text("Aun no hay consultoras registradas")
+            Text("Aún no hay consultoras registradas")
             return@Column
         }
 
@@ -260,7 +260,7 @@ private fun DialogoEditarConsultora(
                 OutlinedTextField(
                     value = direccion,
                     onValueChange = { direccion = it },
-                    label = { Text("Direccion de entrega") },
+                    label = { Text("Dirección de entrega") },
                     modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
@@ -398,7 +398,7 @@ fun AgregarProductoScreen(
         OutlinedTextField(
             value = categoria,
             onValueChange = { categoria = it },
-            label = { Text("Categoria") },
+            label = { Text("Categoría") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
@@ -427,7 +427,7 @@ fun AgregarProductoScreen(
         OutlinedTextField(
             value = comision,
             onValueChange = { comision = it },
-            label = { Text("Comision por unidad (S/, opcional)") },
+            label = { Text("Comisión por unidad (S/, opcional)") },
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             modifier = Modifier.fillMaxWidth()
@@ -437,7 +437,7 @@ fun AgregarProductoScreen(
         OutlinedTextField(
             value = descripcion,
             onValueChange = { descripcion = it },
-            label = { Text("Descripcion") },
+            label = { Text("Descripción") },
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(20.dp))
@@ -582,7 +582,7 @@ private fun TarjetaPedidoAdmin(pedido: PedidoDetalle, consultora: String) {
             val unidades = pedido.items.sumOf { it.cantidad }
             Text(
                 "$unidades unidad(es) - S/ ${"%.2f".format(pedido.total)}" +
-                    if (pedido.costoEnvio > 0.0) " + envio S/ ${"%.2f".format(pedido.costoEnvio)}" else "",
+                    if (pedido.costoEnvio > 0.0) " + envío S/ ${"%.2f".format(pedido.costoEnvio)}" else "",
                 style = MaterialTheme.typography.bodySmall
             )
             val direccion = PedidoValidacion.armarDireccion(pedido.direccion, pedido.distrito)
@@ -636,7 +636,7 @@ fun AdminProductosScreen(
         AlertDialog(
             onDismissRequest = { porEliminar = null },
             title = { Text("Eliminar producto") },
-            text = { Text("Se eliminara ${producto.nombre} del catalogo. Los pedidos ya hechos no se modifican. Esta accion no se puede deshacer.") },
+            text = { Text("Se eliminará ${producto.nombre} del catálogo. Los pedidos ya hechos no se modifican. Esta acción no se puede deshacer.") },
             confirmButton = {
                 Button(
                     onClick = {
@@ -671,7 +671,7 @@ fun AdminProductosScreen(
             return@Column
         }
         if (estado.productos.isEmpty()) {
-            Text("Aun no hay productos en el catalogo")
+            Text("Aún no hay productos en el catálogo")
             return@Column
         }
 
@@ -686,7 +686,7 @@ fun AdminProductosScreen(
                             Text(producto.nombre, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
                             Text(producto.categoria, style = MaterialTheme.typography.bodySmall)
                             Text(
-                                "S/ ${"%.2f".format(producto.precio)} - Comision S/ ${"%.2f".format(producto.comision)}",
+                                "S/ ${"%.2f".format(producto.precio)} - Comisión S/ ${"%.2f".format(producto.comision)}",
                                 style = MaterialTheme.typography.bodySmall
                             )
                             val etiqueta = Inventario.etiqueta(producto.stock)
@@ -733,7 +733,7 @@ private fun DialogoEditarProducto(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 OutlinedTextField(value = nombre, onValueChange = { nombre = it }, label = { Text("Nombre") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                OutlinedTextField(value = categoria, onValueChange = { categoria = it }, label = { Text("Categoria") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(value = categoria, onValueChange = { categoria = it }, label = { Text("Categoría") }, singleLine = true, modifier = Modifier.fillMaxWidth())
                 OutlinedTextField(
                     value = precio,
                     onValueChange = { precio = it },
@@ -753,12 +753,12 @@ private fun DialogoEditarProducto(
                 OutlinedTextField(
                     value = comision,
                     onValueChange = { comision = it },
-                    label = { Text("Comision por unidad (S/)") },
+                    label = { Text("Comisión por unidad (S/)") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     modifier = Modifier.fillMaxWidth()
                 )
-                OutlinedTextField(value = descripcion, onValueChange = { descripcion = it }, label = { Text("Descripcion") }, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(value = descripcion, onValueChange = { descripcion = it }, label = { Text("Descripción") }, modifier = Modifier.fillMaxWidth())
                 error?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
             }
         },

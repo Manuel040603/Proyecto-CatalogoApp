@@ -53,7 +53,7 @@ fun ComisionesScreen(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text("Comision ganada (pedidos entregados)", style = MaterialTheme.typography.labelMedium)
+                Text("Comisión ganada (pedidos entregados)", style = MaterialTheme.typography.labelMedium)
                 Text(
                     "S/ ${"%.2f".format(estado.ganadas)}",
                     style = MaterialTheme.typography.headlineMedium,
@@ -74,7 +74,7 @@ fun ComisionesScreen(
         if (estado.sinComisionConfigurada) {
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                "Los productos de tus pedidos aun no tienen comision configurada. La administradora puede definirla en Perfil, Administrar productos.",
+                "Los productos de tus pedidos aún no tienen comisión configurada. La administradora puede definirla en Perfil, Administrar productos.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -83,7 +83,7 @@ fun ComisionesScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         if (estado.entregados.isEmpty() && estado.enCurso.isEmpty()) {
-            Text("Aun no tienes pedidos registrados")
+            Text("Aún no tienes pedidos registrados")
             return@Column
         }
 

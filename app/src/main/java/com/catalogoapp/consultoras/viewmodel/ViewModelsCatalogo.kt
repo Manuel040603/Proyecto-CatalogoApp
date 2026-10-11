@@ -231,7 +231,7 @@ class DevolucionViewModel @JvmOverloads constructor(
                 _uiState.value = _uiState.value.copy(
                     clasificando = false,
                     resultadoApto = apto,
-                    etiquetaDetectada = mejor?.text ?: "Sin deteccion clara",
+                    etiquetaDetectada = mejor?.text ?: "Sin detección clara",
                     confianza = confianza
                 )
             } catch (excepcion: Exception) {
@@ -390,7 +390,7 @@ class HomeViewModel @JvmOverloads constructor(
 
     fun guardarCampana(etiqueta: String, titulo: String, detalle: String, activa: Boolean, alTerminar: () -> Unit) {
         if (titulo.isBlank()) {
-            _uiState.value = _uiState.value.copy(errorCampana = "Escribe el titulo de la campana")
+            _uiState.value = _uiState.value.copy(errorCampana = "Escribe el título de la campaña")
             return
         }
         _uiState.value = _uiState.value.copy(guardandoCampana = true, errorCampana = null)
@@ -411,7 +411,7 @@ class HomeViewModel @JvmOverloads constructor(
             } else {
                 _uiState.value = _uiState.value.copy(
                     guardandoCampana = false,
-                    errorCampana = MensajeError.de(resultado.exceptionOrNull(), "No se pudo guardar la campana")
+                    errorCampana = MensajeError.de(resultado.exceptionOrNull(), "No se pudo guardar la campaña")
                 )
             }
         }

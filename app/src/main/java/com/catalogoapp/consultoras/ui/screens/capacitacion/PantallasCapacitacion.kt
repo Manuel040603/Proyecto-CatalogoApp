@@ -42,7 +42,7 @@ fun CapacitacionListScreen(
 
         if (esAdmin) {
             OutlinedButton(onClick = onNuevaCapacitacion, modifier = Modifier.fillMaxWidth()) {
-                Text("Nueva capacitacion")
+                Text("Nueva capacitación")
             }
             Spacer(modifier = Modifier.height(12.dp))
         }
@@ -60,7 +60,7 @@ fun CapacitacionListScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                Text("Aun no hay capacitaciones publicadas")
+                Text("Aún no hay capacitaciones publicadas")
             }
             return@Column
         }
@@ -82,7 +82,7 @@ private fun TarjetaCapacitacion(capacitacion: Capacitacion, onClick: () -> Unit)
             Text(capacitacion.descripcion, style = MaterialTheme.typography.bodyMedium)
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                "${capacitacion.preguntas.size} preguntas de evaluacion",
+                "${capacitacion.preguntas.size} preguntas de evaluación",
                 style = MaterialTheme.typography.bodySmall
             )
         }
@@ -110,7 +110,7 @@ fun CapacitacionDetalleScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Capacitacion", style = MaterialTheme.typography.headlineSmall)
+            Text("Capacitación", style = MaterialTheme.typography.headlineSmall)
             TextButton(onClick = onVolver) { Text("Volver") }
         }
         Spacer(modifier = Modifier.height(16.dp))
@@ -131,13 +131,13 @@ fun CapacitacionDetalleScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             Button(onClick = { viewModel.reproducirPausar() }, modifier = Modifier.fillMaxWidth()) {
-                Text(if (estado.reproduciendo) "Detener narracion" else "Escuchar narracion de la capacitacion")
+                Text(if (estado.reproduciendo) "Detener narración" else "Escuchar narración de la capacitación")
             }
             Spacer(modifier = Modifier.height(20.dp))
 
             if (capacitacion.preguntas.isNotEmpty()) {
                 Button(onClick = { viewModel.iniciarEvaluacion() }, modifier = Modifier.fillMaxWidth()) {
-                    Text("Comenzar evaluacion")
+                    Text("Comenzar evaluación")
                 }
             }
             return@Column
@@ -183,7 +183,7 @@ fun CapacitacionDetalleScreen(
         }
 
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-            Text("Evaluacion completada", style = MaterialTheme.typography.headlineSmall)
+            Text("Evaluación completada", style = MaterialTheme.typography.headlineSmall)
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 "${estado.puntaje} de ${capacitacion.preguntas.size} respuestas correctas",
@@ -242,7 +242,7 @@ fun NuevaCapacitacionScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Nueva capacitacion", style = MaterialTheme.typography.headlineSmall)
+                Text("Nueva capacitación", style = MaterialTheme.typography.headlineSmall)
                 TextButton(onClick = onVolver) { Text("Volver") }
             }
         }
@@ -251,7 +251,7 @@ fun NuevaCapacitacionScreen(
             OutlinedTextField(
                 value = estado.titulo,
                 onValueChange = { viewModel.actualizarTitulo(it) },
-                label = { Text("Titulo") },
+                label = { Text("Título") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -261,7 +261,7 @@ fun NuevaCapacitacionScreen(
             OutlinedTextField(
                 value = estado.descripcion,
                 onValueChange = { viewModel.actualizarDescripcion(it) },
-                label = { Text("Descripcion") },
+                label = { Text("Descripción") },
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -270,7 +270,7 @@ fun NuevaCapacitacionScreen(
             OutlinedTextField(
                 value = estado.contenidoNarracion,
                 onValueChange = { viewModel.actualizarContenidoNarracion(it) },
-                label = { Text("Contenido a narrar (se leera en voz alta)") },
+                label = { Text("Contenido a narrar (se leerá en voz alta)") },
                 modifier = Modifier.fillMaxWidth().height(140.dp)
             )
         }
@@ -296,7 +296,7 @@ fun NuevaCapacitacionScreen(
                 if (estado.guardando) {
                     CircularProgressIndicator(modifier = Modifier.size(20.dp))
                 } else {
-                    Text("Guardar capacitacion")
+                    Text("Guardar capacitación")
                 }
             }
         }
@@ -348,14 +348,14 @@ private fun TarjetaPreguntaEditable(
                                 }
                             )
                         },
-                        label = { Text("Opcion ${indice + 1}") },
+                        label = { Text("Opción ${indice + 1}") },
                         singleLine = true,
                         modifier = Modifier.weight(1f)
                     )
                 }
             }
             Text(
-                "Marca el circulo de la opcion correcta",
+                "Marca el círculo de la opción correcta",
                 style = MaterialTheme.typography.bodySmall
             )
         }

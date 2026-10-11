@@ -362,7 +362,7 @@ fun ForgotPasswordScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("Recuperar contrasena", style = MaterialTheme.typography.headlineSmall)
+        Text("Recuperar contraseña", style = MaterialTheme.typography.headlineSmall)
         Spacer(modifier = Modifier.height(24.dp))
 
         OutlinedTextField(
@@ -379,11 +379,11 @@ fun ForgotPasswordScreen(
             enabled = estado !is AuthUiState.Cargando && email.isNotBlank(),
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Enviar correo de recuperacion")
+            Text("Enviar correo de recuperación")
         }
 
         TextButton(onClick = onVolver) {
-            Text("Volver al inicio de sesion")
+            Text("Volver al inicio de sesión")
         }
 
         when (val actual = estado) {

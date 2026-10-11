@@ -45,17 +45,17 @@ object PedidoValidacion {
         return when {
             limpio.isEmpty() -> "Ingresa el celular del cliente"
             limpio.length != 9 || !limpio.all { it.isDigit() } || limpio[0] != '9' ->
-                "El celular debe tener 9 digitos y empezar con 9"
+                "El celular debe tener 9 dígitos y empezar con 9"
             else -> null
         }
     }
 
     fun validarDocumento(tipo: String, numero: String, razonSocial: String): String? {
         return when (tipo) {
-            DNI -> if (numero.length == 8 && numero.all { it.isDigit() }) null else "El DNI debe tener 8 digitos"
+            DNI -> if (numero.length == 8 && numero.all { it.isDigit() }) null else "El DNI debe tener 8 dígitos"
             RUC -> when {
-                !rucValido(numero) -> "El RUC no es valido, revisa los 11 digitos"
-                razonSocial.isBlank() -> "Ingresa la razon social del RUC"
+                !rucValido(numero) -> "El RUC no es válido, revisa los 11 dígitos"
+                razonSocial.isBlank() -> "Ingresa la razón social del RUC"
                 else -> null
             }
             else -> null
@@ -162,7 +162,7 @@ object Inventario {
 
 object MensajeError {
 
-    private const val SIN_CONEXION = "Sin conexion a internet. Revisa tu red e intenta de nuevo"
+    private const val SIN_CONEXION = "Sin conexión a internet. Revisa tu red e intenta de nuevo"
 
     fun de(error: Throwable?, porDefecto: String): String {
         var actual: Throwable? = error
@@ -174,13 +174,13 @@ object MensajeError {
                 return SIN_CONEXION
             }
             if (actual is FirebaseAuthInvalidCredentialsException || actual is FirebaseAuthInvalidUserException) {
-                return "Correo o contrasena incorrectos"
+                return "Correo o contraseña incorrectos"
             }
             if (actual is FirebaseAuthUserCollisionException) {
-                return "Ese correo ya esta registrado"
+                return "Ese correo ya está registrado"
             }
             if (actual is FirebaseAuthWeakPasswordException) {
-                return "La contrasena es muy debil, usa al menos 6 caracteres"
+                return "La contraseña es muy débil, usa al menos 6 caracteres"
             }
             if (actual is FirebaseTooManyRequestsException) {
                 return "Demasiados intentos. Espera un momento e intenta de nuevo"
@@ -190,7 +190,7 @@ object MensajeError {
                     FirebaseFirestoreException.Code.UNAVAILABLE -> return SIN_CONEXION
                     FirebaseFirestoreException.Code.DEADLINE_EXCEEDED -> return SIN_CONEXION
                     FirebaseFirestoreException.Code.PERMISSION_DENIED ->
-                        return "No tienes permiso para realizar esta accion"
+                        return "No tienes permiso para realizar esta acción"
                     else -> {}
                 }
             }
@@ -200,7 +200,7 @@ object MensajeError {
         val texto = error?.message
         return when {
             texto.isNullOrBlank() -> porDefecto
-            texto.contains("no respondio a tiempo") -> "El servidor tardo demasiado en responder. Revisa tu conexion e intenta de nuevo"
+            texto.contains("no respondió a tiempo") -> "El servidor tardó demasiado en responder. Revisa tu conexión e intenta de nuevo"
             texto.contains("network", ignoreCase = true) -> SIN_CONEXION
             else -> texto
         }

@@ -85,7 +85,7 @@ fun PedidoListScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                Text("Aun no has registrado pedidos")
+                Text("Aún no has registrado pedidos")
             }
             return@Column
         }
@@ -148,11 +148,11 @@ private fun TarjetaPedido(
                 if (detalle.fechaEntrega.isNotBlank()) LineaDetalle("Entrega: ${detalle.fechaEntrega}")
                 if (detalle.indicaciones.isNotBlank()) LineaDetalle("Indicaciones: ${detalle.indicaciones}")
                 if (detalle.costoEnvio > 0.0) {
-                    LineaDetalle("Envio: S/ ${"%.2f".format(detalle.costoEnvio)} - Total a cobrar: S/ ${"%.2f".format(detalle.totalCobrado)}")
+                    LineaDetalle("Envío: S/ ${"%.2f".format(detalle.costoEnvio)} - Total a cobrar: S/ ${"%.2f".format(detalle.totalCobrado)}")
                 }
                 LineaDetalle("Pago: ${detalle.metodoPago}")
             } else if (pedido.direccion.isNotBlank()) {
-                LineaDetalle("Direccion: ${pedido.direccion}")
+                LineaDetalle("Dirección: ${pedido.direccion}")
             }
 
             // BOTÓN DE RASTREO: Solo aparece si el pedido está ENVIADO o EN RUTA
@@ -299,7 +299,7 @@ fun NuevoPedidoScreen(
                         OutlinedTextField(
                             value = estado.telefonoCliente,
                             onValueChange = viewModel::actualizarTelefonoCliente,
-                            label = { Text("Celular (9 digitos)") },
+                            label = { Text("Celular (9 dígitos)") },
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                             modifier = Modifier.fillMaxWidth(),
@@ -331,7 +331,7 @@ fun NuevoPedidoScreen(
                                 onValueChange = viewModel::actualizarNumeroDocumento,
                                 label = {
                                     Text(
-                                        if (estado.tipoDocumento == PedidoValidacion.RUC) "RUC (11 digitos)" else "DNI (8 digitos)"
+                                        if (estado.tipoDocumento == PedidoValidacion.RUC) "RUC (11 dígitos)" else "DNI (8 dígitos)"
                                     )
                                 },
                                 singleLine = true,
@@ -346,7 +346,7 @@ fun NuevoPedidoScreen(
                             OutlinedTextField(
                                 value = estado.razonSocial,
                                 onValueChange = viewModel::actualizarRazonSocial,
-                                label = { Text("Razon social") },
+                                label = { Text("Razón social") },
                                 singleLine = true,
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(8.dp)
@@ -383,14 +383,14 @@ fun NuevoPedidoScreen(
 
                         if (estado.tipoEntrega == PedidoValidacion.ENTREGA_CONSULTORA) {
                             Text(
-                                "Se entrega en tu direccion de Perfil, Datos y direccion:",
+                                "Se entrega en tu dirección de Perfil, Datos y dirección:",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             if (estado.direccion.isBlank()) {
                                 Text(
-                                    "Sin direccion registrada todavia",
+                                    "Sin dirección registrada todavía",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.error
                                 )
@@ -412,7 +412,7 @@ fun NuevoPedidoScreen(
                             OutlinedTextField(
                                 value = estado.direccion,
                                 onValueChange = viewModel::actualizarDireccion,
-                                label = { Text("Direccion de entrega del cliente") },
+                                label = { Text("Dirección de entrega del cliente") },
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(8.dp)
                             )
@@ -457,7 +457,7 @@ fun NuevoPedidoScreen(
                             FilterChip(
                                 selected = estado.fechaEntrega == manana,
                                 onClick = { viewModel.actualizarFechaEntrega(manana) },
-                                label = { Text("Manana") }
+                                label = { Text("Mañana") }
                             )
                         }
                         Spacer(modifier = Modifier.height(8.dp))
@@ -540,7 +540,7 @@ fun NuevoPedidoScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            if (viewModel.costoEnvio() > 0.0) "Envio al cliente: S/ ${"%.2f".format(viewModel.costoEnvio())}" else "Envio: gratis (a la consultora)",
+                            if (viewModel.costoEnvio() > 0.0) "Envío al cliente: S/ ${"%.2f".format(viewModel.costoEnvio())}" else "Envío: gratis (a la consultora)",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

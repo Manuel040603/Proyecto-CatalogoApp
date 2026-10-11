@@ -80,7 +80,7 @@ fun CatalogoScreen(
                         Toast.makeText(contexto, "Detectado: ${deteccion.etiquetas.first()}", Toast.LENGTH_SHORT).show()
                     } else {
                         val detectado = if (deteccion.etiquetas.isEmpty()) "nada con claridad" else deteccion.etiquetas.take(3).joinToString(", ")
-                        Toast.makeText(contexto, "No se reconocio un producto del catalogo. Detectado: $detectado", Toast.LENGTH_LONG).show()
+                        Toast.makeText(contexto, "No se reconoció un producto del catálogo. Detectado: $detectado", Toast.LENGTH_LONG).show()
                     }
                 } catch (excepcion: Exception) {
                     Toast.makeText(contexto, "No se pudo analizar la foto", Toast.LENGTH_SHORT).show()

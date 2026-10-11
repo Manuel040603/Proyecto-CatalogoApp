@@ -87,7 +87,7 @@ fun ListaRepartosScreen(
             }
         } else if (estado.repartos.isEmpty()) {
             Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                Text("Todavia no has creado ningun reparto")
+                Text("Todavía no has creado ningún reparto")
             }
         } else {
             LazyColumn(
@@ -197,7 +197,7 @@ fun CrearRepartoScreen(
         val activos = estado.repartidores.filter { it.activo }
         if (activos.isEmpty()) {
             Text(
-                "Aun no hay repartidores registrados. Agrega uno para poder crear repartos.",
+                "Aún no hay repartidores registrados. Agrega uno para poder crear repartos.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.error
             )
@@ -220,7 +220,7 @@ fun CrearRepartoScreen(
             }
             if (activos.all { viewModel.estaOcupado(it) }) {
                 Text(
-                    "Todos los repartidores estan en un reparto en curso.",
+                    "Todos los repartidores están en un reparto en curso.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error
                 )
@@ -231,7 +231,7 @@ fun CrearRepartoScreen(
         OutlinedTextField(
             value = estado.direccionOrigen,
             onValueChange = viewModel::actualizarDireccionOrigen,
-            label = { Text("Direccion de origen (punto de partida)") },
+            label = { Text("Dirección de origen (punto de partida)") },
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(16.dp))
@@ -245,7 +245,7 @@ fun CrearRepartoScreen(
             }
         } else if (estado.pedidosDisponibles.isEmpty()) {
             Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                Text("No hay pedidos pendientes con direccion registrada")
+                Text("No hay pedidos pendientes con dirección registrada")
             }
         } else {
             LazyColumn(
@@ -329,7 +329,7 @@ private fun DialogoNuevoRepartidor(
                 OutlinedTextField(
                     value = placa,
                     onValueChange = { placa = it },
-                    label = { Text("Placa del vehiculo") },
+                    label = { Text("Placa del vehículo") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -429,7 +429,7 @@ fun RepartoDetalleScreen(
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Actualizar mi ubicacion")
+            Text("Actualizar mi ubicación")
         }
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -647,7 +647,7 @@ fun SeguimientoPedidoScreen(
                 modifier = Modifier.fillMaxWidth().padding(32.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text("No se encontro el pedido #$pedidoId", style = MaterialTheme.typography.bodyMedium)
+                Text("No se encontró el pedido #$pedidoId", style = MaterialTheme.typography.bodyMedium)
             }
             return@Column
         }
@@ -682,7 +682,7 @@ fun SeguimientoPedidoScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 if (detalle != null && detalle.costoEnvio > 0.0) {
                     Text(
-                        "Envio: S/ ${"%.2f".format(detalle.costoEnvio)}",
+                        "Envío: S/ ${"%.2f".format(detalle.costoEnvio)}",
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
@@ -720,7 +720,7 @@ fun SeguimientoPedidoScreen(
                 subtitulo = when {
                     reparto != null -> "Reparto #${reparto.id} - ${reparto.zona}"
                     enviado || entregado -> fechaDeEstado(detalle, listOf("ENVIADO", "EN RUTA")) ?: "Pedido enviado"
-                    else -> "Pendiente de envio"
+                    else -> "Pendiente de envío"
                 },
                 completado = enviado || entregado,
                 esActual = enviado,
@@ -798,7 +798,7 @@ fun SeguimientoPedidoScreen(
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                         )
                         Text(
-                            text = "Vehiculo ${reparto.vehiculo}",
+                            text = "Vehículo ${reparto.vehiculo}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -833,7 +833,7 @@ fun SeguimientoPedidoScreen(
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text("Sin reparto asignado", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold))
                     Text(
-                        estado.error ?: "Este pedido aun no esta en un reparto. Cuando se asigne, aqui veras chofer, vehiculo y la ruta.",
+                        estado.error ?: "Este pedido aún no está en un reparto. Cuando se asigne, aquí verás chofer, vehículo y la ruta.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

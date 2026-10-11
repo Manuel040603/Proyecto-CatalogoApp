@@ -36,7 +36,7 @@ fun DevolucionScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Registrar devolucion", style = MaterialTheme.typography.headlineSmall)
+            Text("Registrar devolución", style = MaterialTheme.typography.headlineSmall)
             TextButton(onClick = onVolver) { Text("Volver") }
         }
         Spacer(modifier = Modifier.height(16.dp))
@@ -73,7 +73,7 @@ fun DevolucionScreen(
                 } else if (estado.historial.isEmpty() && estado.avisoHistorial == null) {
                     item {
                         Text(
-                            "Aun no hay devoluciones registradas",
+                            "Aún no hay devoluciones registradas",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -150,7 +150,7 @@ fun DevolucionScreen(
             Text(mensaje, color = MaterialTheme.colorScheme.primary)
             Spacer(modifier = Modifier.height(12.dp))
             OutlinedButton(onClick = { viewModel.reiniciar() }, modifier = Modifier.fillMaxWidth()) {
-                Text("Registrar otra devolucion")
+                Text("Registrar otra devolución")
             }
         }
 
