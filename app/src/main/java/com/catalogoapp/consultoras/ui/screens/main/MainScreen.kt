@@ -46,7 +46,7 @@ fun MainScreen(
                 NavigationBarItem(
                     selected = currentRoute == Rutas.CATALOGO,
                     onClick = { navController.navigate(Rutas.CATALOGO) { launchSingleTop = true } },
-                    icon = { Icon(Icons.Default.ShoppingCart, contentDescription = "Catálogo") },
+                    icon = { Icon(Icons.Default.Store, contentDescription = "Catálogo") },
                     label = { Text("Catálogo") },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = MaterialTheme.colorScheme.primary,

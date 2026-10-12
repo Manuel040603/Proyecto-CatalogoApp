@@ -10,6 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import android.widget.Toast
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -309,13 +310,16 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
 
         composable(Rutas.CATALOGO) {
             val catalogoViewModel = viewModel<CatalogoViewModel>()
+            val estadoCarrito by pedidoViewModel.uiState.collectAsState()
             MainScreen(navController = navController) {
                 CatalogoScreen(
                     viewModel = catalogoViewModel,
                     onVolver = { navController.popBackStack() },
                     onProductoClick = { producto ->
                         navController.navigate("${Rutas.DETALLE_PRODUCTO}/${producto.id}")
-                    }
+                    },
+                    cantidadCarrito = estadoCarrito.carrito.sumOf { it.cantidad },
+                    onAbrirCarrito = { navController.navigate(Rutas.NUEVO_PEDIDO) }
                 )
             }
         }
@@ -331,14 +335,25 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
                 catalogoViewModel.obtenerProductoPorId(productoId)
             }
 
+            val estadoCarrito by pedidoViewModel.uiState.collectAsState()
+            val contexto = LocalContext.current
             if (producto != null) {
                 PantallaConEspacioSuperior {
                     DetalleProductoScreen(
                         producto = producto,
                         onVolver = { navController.popBackStack() },
-                        onAgregarAlPedido = { prod, vol ->
-                            // Aquí conectaremos con el PedidoViewModel más adelante
-                            println("Agregar al pedido: ${prod.nombre} - $vol")
+                        cantidadCarrito = estadoCarrito.carrito.sumOf { it.cantidad },
+                        cantidadProductoEnCarrito = estadoCarrito.carrito
+                            .firstOrNull { it.producto.id == producto.id }?.cantidad ?: 0,
+                        onAbrirCarrito = { navController.navigate(Rutas.NUEVO_PEDIDO) },
+                        onAgregarAlPedido = { prod, _ ->
+                            val enCarrito = pedidoViewModel.cantidadEnCarritoDe(prod.id)
+                            if (enCarrito < prod.stock) {
+                                pedidoViewModel.cambiarCantidadEnCarrito(prod, enCarrito + 1)
+                                Toast.makeText(contexto, "${prod.nombre} agregado al carrito", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(contexto, "No hay más stock de ${prod.nombre}", Toast.LENGTH_SHORT).show()
+                            }
                         }
                     )
                 }

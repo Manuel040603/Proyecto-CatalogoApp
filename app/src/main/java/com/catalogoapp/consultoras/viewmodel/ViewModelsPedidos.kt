@@ -21,6 +21,7 @@ import com.catalogoapp.consultoras.data.repository.ProductRepository
 import com.catalogoapp.consultoras.data.repository.ProfileRepository
 import com.catalogoapp.consultoras.data.repository.RepartidorRepository
 import com.catalogoapp.consultoras.data.repository.RepartoRepository
+import com.catalogoapp.consultoras.util.AdminConfig
 import com.catalogoapp.consultoras.util.MensajeError
 import com.catalogoapp.consultoras.util.PedidoValidacion
 import com.google.firebase.auth.FirebaseAuth
@@ -449,10 +450,22 @@ data class RepartoUiState(
     val error: String? = null
 )
 
+private fun PedidoDetalle.aRespuesta(): PedidoResponse = PedidoResponse(
+    id = pedidoId,
+    uidConsultora = uidConsultora,
+    nombreCliente = nombreCliente,
+    telefonoCliente = telefonoCliente,
+    direccion = PedidoValidacion.armarDireccion(direccion, distrito),
+    total = total,
+    estado = estado,
+    items = items
+)
+
 class RepartoViewModel @JvmOverloads constructor(
     private val repartoRepository: RepartoRepository = RepartoRepository(),
     private val pedidoRepository: PedidoRepository = PedidoRepository(),
-    private val repartidorRepository: RepartidorRepository = RepartidorRepository()
+    private val repartidorRepository: RepartidorRepository = RepartidorRepository(),
+    private val detalleRepository: PedidoDetalleRepository = PedidoDetalleRepository()
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RepartoUiState())
@@ -515,7 +528,12 @@ class RepartoViewModel @JvmOverloads constructor(
     fun cargarPedidosDisponibles() {
         _uiState.value = _uiState.value.copy(cargandoPedidos = true)
         viewModelScope.launch {
-            val resultado = pedidoRepository.listarPedidos()
+            val correo = FirebaseAuth.getInstance().currentUser?.email
+            val resultado: Result<List<PedidoResponse>> = if (AdminConfig.esAdmin(correo)) {
+                detalleRepository.obtenerTodos().map { detalles -> detalles.map { it.aRespuesta() } }
+            } else {
+                pedidoRepository.listarPedidos()
+            }
             val lista = resultado.getOrNull()
             if (lista == null) {
                 _uiState.value = _uiState.value.copy(cargandoPedidos = false, error = MensajeError.de(resultado.exceptionOrNull(), "Ocurrió un error"))
@@ -529,7 +547,7 @@ class RepartoViewModel @JvmOverloads constructor(
                 val enCurso = resumenes.filter { it.estado == "EN_CURSO" }
                 enCurso.forEach { choferesOcupados.add(normalizar(it.chofer)) }
                 val detalles = coroutineScope {
-                    enCurso.map { resumen -> async { repartoRepository.obtenerReparto(resumen.id).getOrNull() } }.awaitAll()
+                    resumenes.map { resumen -> async { repartoRepository.obtenerReparto(resumen.id).getOrNull() } }.awaitAll()
                 }
                 detalles.forEach { detalle ->
                     detalle?.paradas?.forEach { pedidosEnReparto.add(it.pedidoId) }

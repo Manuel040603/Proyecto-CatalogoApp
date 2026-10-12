@@ -50,7 +50,9 @@ import kotlinx.coroutines.launch
 fun CatalogoScreen(
     viewModel: CatalogoViewModel,
     onVolver: () -> Unit,
-    onProductoClick: (Producto) -> Unit
+    onProductoClick: (Producto) -> Unit,
+    cantidadCarrito: Int,
+    onAbrirCarrito: () -> Unit
 ) {
     val estado by viewModel.uiState.collectAsState()
     var searchQuery by remember { mutableStateOf("") }
@@ -103,15 +105,19 @@ fun CatalogoScreen(
             .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 16.dp)
     ) {
-        // Barra Superior v3
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 20.dp),
-            horizontalArrangement = Arrangement.End,
+                .padding(top = 12.dp, bottom = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Se eliminó la flecha de volver para limpiar la interfaz según lo solicitado
+            Text(
+                text = "Catálogo",
+                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            BotonCarrito(cantidad = cantidadCarrito, onClick = onAbrirCarrito)
         }
 
         // Buscador v3 con iconos de IA
@@ -348,9 +354,31 @@ fun RetailProductCard(producto: Producto, onClick: () -> Unit) {
 }
 
 @Composable
+fun BotonCarrito(cantidad: Int, onClick: () -> Unit) {
+    IconButton(onClick = onClick) {
+        BadgedBox(
+            badge = {
+                if (cantidad > 0) {
+                    Badge { Text(if (cantidad > 99) "99+" else cantidad.toString()) }
+                }
+            }
+        ) {
+            Icon(
+                Icons.Default.ShoppingCart,
+                contentDescription = "Carrito",
+                tint = MaterialTheme.colorScheme.primary
+            )
+        }
+    }
+}
+
+@Composable
 fun DetalleProductoScreen(
     producto: Producto,
     onVolver: () -> Unit,
+    cantidadCarrito: Int,
+    cantidadProductoEnCarrito: Int,
+    onAbrirCarrito: () -> Unit,
     onAgregarAlPedido: (Producto, String) -> Unit
 ) {
     var volumenSeleccionado by remember { mutableStateOf("50 ml") }
@@ -369,21 +397,29 @@ fun DetalleProductoScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 IconButton(onClick = onVolver) {
                     Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
                 }
                 Text(
                     text = producto.nombre,
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onBackground
+                    color = MaterialTheme.colorScheme.onBackground,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
-            Text(
-                text = "S/ ${"%.2f".format(producto.precio)}",
-                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.ExtraBold),
-                color = MaterialTheme.colorScheme.primary
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "S/ ${"%.2f".format(producto.precio)}",
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.ExtraBold),
+                    color = MaterialTheme.colorScheme.primary
+                )
+                BotonCarrito(cantidad = cantidadCarrito, onClick = onAbrirCarrito)
+            }
         }
 
         Column(
@@ -541,7 +577,11 @@ fun DetalleProductoScreen(
             shape = RoundedCornerShape(28.dp),
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
         ) {
-            Text("Agregar al pedido", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), color = Color.White)
+            Text(
+                text = if (cantidadProductoEnCarrito > 0) "Agregar otra unidad ($cantidadProductoEnCarrito en el carrito)" else "Agregar al carrito",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                color = Color.White
+            )
         }
     }
 }
