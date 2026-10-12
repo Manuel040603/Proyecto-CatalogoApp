@@ -79,12 +79,13 @@ object PedidoValidacion {
 
     private fun formatoFecha(): SimpleDateFormat {
         val formato = SimpleDateFormat("dd/MM/yyyy", Locale.US)
+        formato.timeZone = HoraLima.zona
         formato.isLenient = false
         return formato
     }
 
     fun fechaDesdeHoy(dias: Int): String {
-        val calendario = Calendar.getInstance()
+        val calendario = HoraLima.calendario()
         calendario.add(Calendar.DAY_OF_YEAR, dias)
         return formatoFecha().format(calendario.time)
     }

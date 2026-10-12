@@ -37,13 +37,11 @@ import com.catalogoapp.consultoras.data.model.ParadaRepartoDto
 import com.catalogoapp.consultoras.data.model.PedidoDetalle
 import com.catalogoapp.consultoras.data.model.PedidoResponse
 import com.catalogoapp.consultoras.data.model.ResumenRepartoDto
+import com.catalogoapp.consultoras.util.HoraLima
 import com.catalogoapp.consultoras.util.PedidoValidacion
 import com.catalogoapp.consultoras.util.PolylineDecoder
 import com.catalogoapp.consultoras.viewmodel.RepartoViewModel
 import com.catalogoapp.consultoras.viewmodel.SeguimientoViewModel
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.BoundingBox
@@ -588,12 +586,10 @@ private fun obtenerUbicacionYActualizar(
     }
 }
 
-private fun fechaCorta(texto: String): String {
-    return if (texto.isBlank()) "" else texto.replace('T', ' ').take(16)
-}
+private fun fechaCorta(texto: String): String = HoraLima.desdeServidor(texto)
 
 private fun fechaHora(milisegundos: Long): String {
-    return SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.US).format(Date(milisegundos))
+    return HoraLima.formatear(milisegundos)
 }
 
 private fun fechaDeEstado(detalle: PedidoDetalle?, estados: List<String>): String? {

@@ -36,6 +36,7 @@ import com.catalogoapp.consultoras.data.model.ConsultoraProfile
 import com.catalogoapp.consultoras.data.model.PedidoDetalle
 import com.catalogoapp.consultoras.data.model.Producto
 import com.catalogoapp.consultoras.util.AdminConfig
+import com.catalogoapp.consultoras.util.HoraLima
 import com.catalogoapp.consultoras.util.Inventario
 import com.catalogoapp.consultoras.util.PedidoValidacion
 import com.catalogoapp.consultoras.util.bitmapABase64
@@ -44,9 +45,6 @@ import com.catalogoapp.consultoras.viewmodel.AdminPedidosViewModel
 import com.catalogoapp.consultoras.viewmodel.AdminProductosViewModel
 import com.catalogoapp.consultoras.viewmodel.AgregarProductoUiState
 import com.catalogoapp.consultoras.viewmodel.AgregarProductoViewModel
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 @Composable
 fun AdminConsultorasScreen(
@@ -574,7 +572,7 @@ private fun TarjetaPedidoAdmin(pedido: PedidoDetalle, consultora: String) {
             Text("Consultora: $consultora", style = MaterialTheme.typography.bodySmall)
             if (pedido.fechaCreacion > 0L) {
                 Text(
-                    SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.US).format(Date(pedido.fechaCreacion)),
+                    HoraLima.formatear(pedido.fechaCreacion),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

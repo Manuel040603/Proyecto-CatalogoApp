@@ -14,10 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
 import com.catalogoapp.consultoras.data.model.Devolucion
+import com.catalogoapp.consultoras.util.HoraLima
 import com.catalogoapp.consultoras.viewmodel.DevolucionViewModel
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 @Composable
 fun DevolucionScreen(
@@ -183,7 +181,7 @@ private fun TarjetaDevolucion(devolucion: Devolucion, mostrarConsultora: Boolean
                 )
             }
             Text(
-                SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.US).format(Date(devolucion.fecha)),
+                HoraLima.formatear(devolucion.fecha),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
