@@ -372,6 +372,7 @@ fun BotonCarrito(cantidad: Int, onClick: () -> Unit) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetalleProductoScreen(
     producto: Producto,
@@ -389,36 +390,39 @@ fun DetalleProductoScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Barra Superior simplificada
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onVolver) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
-            }
-            Text(
-                text = "Detalles del Producto",
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium),
-                color = MaterialTheme.colorScheme.onBackground
+        // Barra Superior Profesional (Estilo Moderno)
+        CenterAlignedTopAppBar(
+            title = {
+                Text(
+                    "Detalles",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            },
+            navigationIcon = {
+                IconButton(onClick = onVolver) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                }
+            },
+            actions = {
+                BotonCarrito(cantidad = cantidadCarrito, onClick = onAbrirCarrito)
+            },
+            colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                containerColor = MaterialTheme.colorScheme.background
             )
-            Spacer(modifier = Modifier.weight(1f))
-            BotonCarrito(cantidad = cantidadCarrito, onClick = onAbrirCarrito)
-        }
+        )
 
         Column(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp)
         ) {
-            // Imagen Principal
+            // Imagen Principal con bordes más suaves y elegantes
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f)
-                    .clip(RoundedCornerShape(24.dp))
+                    .clip(RoundedCornerShape(16.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center
             ) {
@@ -435,14 +439,18 @@ fun DetalleProductoScreen(
                         contentScale = ContentScale.Crop
                     )
                 } else {
-                    Icon(Icons.Default.ShoppingCart, contentDescription = null, modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.outline)
+                    Icon(Icons.Default.ShoppingCart, contentDescription = null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.outline)
                 }
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Bloque de Precio y Título (Equilibrado y Profesional)
-            Column(modifier = Modifier.fillMaxWidth()) {
+            // Bloque de Precio y Botón de Agregar (Estático y Compacto)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
                 Text(
                     text = "S/ ${"%.2f".format(producto.precio)}",
                     style = MaterialTheme.typography.titleLarge.copy(
@@ -450,15 +458,31 @@ fun DetalleProductoScreen(
                         color = MaterialTheme.colorScheme.primary
                     )
                 )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = producto.nombre,
-                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
-                    color = MaterialTheme.colorScheme.onBackground,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
+
+                Button(
+                    onClick = { onAgregarAlPedido(producto, volumenSeleccionado) },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
+                ) {
+                    Text(
+                        text = if (cantidadProductoEnCarrito > 0) "Añadir más" else "Agregar",
+                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                        color = Color.White
+                    )
+                }
             }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = producto.nombre,
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
+                color = MaterialTheme.colorScheme.onBackground,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -496,7 +520,7 @@ fun DetalleProductoScreen(
                 text = producto.descripcion,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(bottom = 24.dp),
+                modifier = Modifier.padding(bottom = 32.dp),
                 lineHeight = androidx.compose.ui.unit.TextUnit.Unspecified // Default
             )
 
@@ -589,49 +613,4 @@ fun DetalleProductoScreen(
             Spacer(modifier = Modifier.height(100.dp)) // Espacio extra para que el contenido no quede tapado por el botón
         }
     }
-
-    // Botón Fijo Inferior - Rediseñado para no ocupar todo el ancho y ser más elegante
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(bottom = 32.dp),
-        contentAlignment = Alignment.BottomCenter
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(horizontal = 24.dp)
-                .fillMaxWidth(0.85f), // No ocupa todo el ancho, deja aire a los lados
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Botón de Favoritos/Compartir (Espacio para futuras funciones)
-            OutlinedButton(
-                onClick = { /* Favoritos */ },
-                modifier = Modifier.size(56.dp),
-                shape = RoundedCornerShape(28.dp),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary)
-            ) {
-                Icon(Icons.Default.Favorite, contentDescription = "Favoritos")
-            }
-
-            // Botón Principal de Agregar al Carrito
-            Button(
-                onClick = { onAgregarAlPedido(producto, volumenSeleccionado) },
-                modifier = Modifier
-                    .weight(1f)
-                    .height(56.dp),
-                shape = RoundedCornerShape(28.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
-            ) {
-                Text(
-                    text = if (cantidadProductoEnCarrito > 0) "Añadir más ($cantidadProductoEnCarrito)" else "Agregar al carrito",
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = Color.White,
-                    maxLines = 1
-                )
-            }
-        }
-    }
-
 }

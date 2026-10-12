@@ -338,7 +338,7 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
             val estadoCarrito by pedidoViewModel.uiState.collectAsState()
             val contexto = LocalContext.current
             if (producto != null) {
-                PantallaConEspacioSuperior {
+                MainScreen(navController = navController) {
                     DetalleProductoScreen(
                         producto = producto,
                         onVolver = { navController.popBackStack() },
