@@ -590,27 +590,48 @@ fun DetalleProductoScreen(
         }
     }
 
-    // Botón Fijo Inferior con Safe Area y Elevación
+    // Botón Fijo Inferior - Rediseñado para no ocupar todo el ancho y ser más elegante
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(bottom = 32.dp, start = 20.dp, end = 20.dp),
+            .padding(bottom = 32.dp),
         contentAlignment = Alignment.BottomCenter
     ) {
-        Button(
-            onClick = { onAgregarAlPedido(producto, volumenSeleccionado) },
+        Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(60.dp),
-            shape = RoundedCornerShape(30.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-            elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp)
+                .padding(horizontal = 24.dp)
+                .fillMaxWidth(0.85f), // No ocupa todo el ancho, deja aire a los lados
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = if (cantidadProductoEnCarrito > 0) "Agregar otra unidad ($cantidadProductoEnCarrito en el carrito)" else "Agregar al carrito",
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                color = Color.White
-            )
+            // Botón de Favoritos/Compartir (Espacio para futuras funciones)
+            OutlinedButton(
+                onClick = { /* Favoritos */ },
+                modifier = Modifier.size(56.dp),
+                shape = RoundedCornerShape(28.dp),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary)
+            ) {
+                Icon(Icons.Default.Favorite, contentDescription = "Favoritos")
+            }
+
+            // Botón Principal de Agregar al Carrito
+            Button(
+                onClick = { onAgregarAlPedido(producto, volumenSeleccionado) },
+                modifier = Modifier
+                    .weight(1f)
+                    .height(56.dp),
+                shape = RoundedCornerShape(28.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
+            ) {
+                Text(
+                    text = if (cantidadProductoEnCarrito > 0) "Añadir más ($cantidadProductoEnCarrito)" else "Agregar al carrito",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = Color.White,
+                    maxLines = 1
+                )
+            }
         }
     }
+
 }
