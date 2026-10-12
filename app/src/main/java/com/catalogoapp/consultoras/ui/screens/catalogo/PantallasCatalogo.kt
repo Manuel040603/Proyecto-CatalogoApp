@@ -441,21 +441,21 @@ fun DetalleProductoScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Bloque de Precio y Título (Estilo AliExpress)
+            // Bloque de Precio y Título (Equilibrado y Profesional)
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = "S/ ${"%.2f".format(producto.precio)}",
-                    style = MaterialTheme.typography.headlineMedium.copy(
-                        fontWeight = FontWeight.ExtraBold,
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = producto.nombre,
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
                     color = MaterialTheme.colorScheme.onBackground,
-                    maxLines = 3,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
             }
