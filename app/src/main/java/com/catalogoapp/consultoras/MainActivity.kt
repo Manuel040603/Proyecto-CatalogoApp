@@ -36,18 +36,14 @@ class MainActivity : ComponentActivity() {
                 SideEffect {
                     val window = (view.context as Activity).window
 
-                    // Ajustamos el color de la barra de estado según el tema
                     val isDark = currentTheme == "dark" || currentTheme == "black"
 
-                    // Barra de estado (superior)
                     window.statusBarColor = if (isDark) android.graphics.Color.BLACK else android.graphics.Color.WHITE
                     WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !isDark
 
-                    // Barra de navegación del sistema (inferior) - Forzamos color sólido
                     window.navigationBarColor = if (isDark) android.graphics.Color.BLACK else android.graphics.Color.WHITE
                     WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars = !isDark
 
-                    // Desactivar el modo Edge-to-Edge para la barra de navegación si es necesario
                     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
                         window.isNavigationBarContrastEnforced = true
                     }

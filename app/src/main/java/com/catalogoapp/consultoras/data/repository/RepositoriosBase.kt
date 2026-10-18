@@ -10,6 +10,7 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
+import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -105,7 +106,7 @@ class ProfileRepository {
             "tipoComprobante" to perfil.tipoComprobante,
             "esAdmin" to FieldValue.delete() // Eliminamos el campo obsoleto
         )
-        documento(perfil.uid).set(datos).await()
+        documento(perfil.uid).set(datos, SetOptions.merge()).await()
         Result.success(Unit)
     } catch (e: Exception) {
         Result.failure(e)
@@ -115,7 +116,6 @@ class ProfileRepository {
         val snapshot = documento(uid).get().await()
         val perfil = snapshot.toObject(ConsultoraProfile::class.java)
 
-        // Lógica de migración: esAdmin (Boolean) -> rol (String)
         val rolFinal = when {
             perfil?.rol != null && perfil.rol != "CONSULTORA" -> perfil.rol
             perfil?.esAdmin == true -> "DIRECTORA_COMERCIAL"

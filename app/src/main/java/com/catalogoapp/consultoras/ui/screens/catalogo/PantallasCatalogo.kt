@@ -120,7 +120,6 @@ fun CatalogoScreen(
             BotonCarrito(cantidad = cantidadCarrito, onClick = onAbrirCarrito)
         }
 
-        // Buscador v3 con iconos de IA
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },
@@ -177,7 +176,6 @@ fun CatalogoScreen(
             return@Column
         }
 
-        // Chips de Categoría v3
         val categorias = viewModel.categoriasDisponibles()
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -252,7 +250,6 @@ fun RetailProductCard(producto: Producto, onClick: () -> Unit) {
                     .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center
             ) {
-                // Badge de "NUEVO" v3
                 if (producto.esNuevo) {
                     Surface(
                         modifier = Modifier
@@ -390,7 +387,6 @@ fun DetalleProductoScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Barra Superior Profesional (Estilo Moderno)
         CenterAlignedTopAppBar(
             title = {
                 Text(
@@ -417,7 +413,6 @@ fun DetalleProductoScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp)
         ) {
-            // Imagen Principal con bordes más suaves y elegantes
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -445,7 +440,6 @@ fun DetalleProductoScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Bloque de Precio y Botón de Agregar (Estático y Compacto)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -486,7 +480,6 @@ fun DetalleProductoScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Miniaturas (Simuladas)
             Text(
                 "Galería",
                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
@@ -510,7 +503,6 @@ fun DetalleProductoScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Descripción con mejor espaciado
             Text(
                 "Descripción",
                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
@@ -521,10 +513,9 @@ fun DetalleProductoScreen(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = 32.dp),
-                lineHeight = androidx.compose.ui.unit.TextUnit.Unspecified // Default
+                lineHeight = androidx.compose.ui.unit.TextUnit.Unspecified
             )
 
-            // Selector de Contenido/Volumen
             Text(
                 "Selecciona el Contenido",
                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
@@ -549,7 +540,6 @@ fun DetalleProductoScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Caja de Comisión y Stock más estilizada
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -578,7 +568,6 @@ fun DetalleProductoScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Botones de IA con diseño más moderno
             Text(
                 "Asistente Inteligente",
                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
@@ -589,7 +578,7 @@ fun DetalleProductoScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Button(
-                    onClick = { /* IA AR */ },
+                    onClick = { },
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer, contentColor = MaterialTheme.colorScheme.onSecondaryContainer)
@@ -599,7 +588,7 @@ fun DetalleProductoScreen(
                     Text("Probar AR")
                 }
                 Button(
-                    onClick = { /* IA Chat */ },
+                    onClick = { },
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer, contentColor = MaterialTheme.colorScheme.onSecondaryContainer)
@@ -610,7 +599,7 @@ fun DetalleProductoScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(100.dp)) // Espacio extra para que el contenido no quede tapado por el botón
+            Spacer(modifier = Modifier.height(100.dp))
         }
     }
 }

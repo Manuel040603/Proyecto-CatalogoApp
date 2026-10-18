@@ -99,7 +99,6 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
     val pedidoViewModel = remember { PedidoViewModel() }
     val repartoViewModel = remember { RepartoViewModel() }
     val homeViewModel = remember { HomeViewModel() }
-    // Simplificamos el manejo del tema para evitar bloqueos al inicio
     var currentTheme by remember { mutableStateOf("system") }
     val scope = rememberCoroutineScope()
     val themeManager = remember { ThemeManager(context) }
@@ -330,7 +329,6 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
         ) { backStackEntry ->
             val productoId = backStackEntry.arguments?.getString("productoId") ?: ""
             val catalogoViewModel = viewModel<CatalogoViewModel>()
-            // Obtenemos el producto por ID desde el ViewModel
             val producto = remember(productoId) {
                 catalogoViewModel.obtenerProductoPorId(productoId)
             }
@@ -358,7 +356,6 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
                     )
                 }
             } else {
-                // Pantalla de carga o error si no encuentra el producto
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
                 }

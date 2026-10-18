@@ -27,7 +27,7 @@ import org.osmdroid.util.GeoPoint
 object AdminConfig {
     private val CORREOS_ADMIN = setOf("admin@catalogoapp.com")
 
-    private val CORREOS_SIN_VERIFICACION = setOf("admin@catalogoapp.com", "logistica.test@example.com", "directora.test@example.com")
+    private val CORREOS_SIN_VERIFICACION = setOf("admin@catalogoapp.com", "test@test.com", "logistica.test@example.com", "directora.test@example.com")
 
     private val _administradores = MutableStateFlow<Set<String>>(emptySet())
     val administradores: StateFlow<Set<String>> = _administradores
@@ -48,8 +48,6 @@ object AdminConfig {
     }
 
     fun esAdmin(email: String?): Boolean {
-        // Este método ahora es un fallback.
-        // La validación real debe hacerse contra el campo 'rol' del ConsultoraProfile.
         val correo = normalizar(email) ?: return false
         return CORREOS_ADMIN.contains(correo) || _administradores.value.contains(correo)
     }
@@ -176,7 +174,6 @@ object PolylineDecoder {
     }
 }
 
-// Extensión para crear el DataStore
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
 class ThemeManager(private val context: Context) {
@@ -184,7 +181,6 @@ class ThemeManager(private val context: Context) {
         private val THEME_KEY = stringPreferencesKey("selected_theme")
     }
 
-    // Flujo que emite el tema seleccionado (light, dark, black, system)
     val themeFlow: Flow<String> = context.dataStore.data
         .map { preferences ->
             preferences[THEME_KEY] ?: "system"

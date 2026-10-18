@@ -155,7 +155,6 @@ private fun TarjetaPedido(
                 LineaDetalle("Dirección: ${pedido.direccion}")
             }
 
-            // BOTÓN DE RASTREO: Solo aparece si el pedido está ENVIADO o EN RUTA
             if (pedido.estado == "ENVIADO" || pedido.estado == "EN RUTA") {
                 Spacer(modifier = Modifier.height(10.dp))
                 OutlinedButton(

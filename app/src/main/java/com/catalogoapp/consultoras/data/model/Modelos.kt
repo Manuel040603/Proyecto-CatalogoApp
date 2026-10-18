@@ -33,7 +33,7 @@ data class ConsultoraProfile @JvmOverloads constructor(
     val preferencias: String = "",
     val fotoBase64: String = "",
     val activo: Boolean = true,
-    val esAdmin: Boolean = false, // Deprecated: use rol
+    val esAdmin: Boolean = false,
     val rol: String = "CONSULTORA",
     val ultimaActualizacion: Long = System.currentTimeMillis(),
     val nivel: String = "Plata",
@@ -107,7 +107,10 @@ data class RepartoResponse(
     val vehiculo: String = "",
     val estado: String = "",
     val paradas: List<ParadaRepartoDto> = emptyList(),
-    val geometriaRuta: String? = null
+    val geometriaRuta: String? = null,
+    val latitudActual: Double? = null,
+    val longitudActual: Double? = null,
+    val fechaUbicacion: String? = null
 )
 
 data class ActualizarUbicacionRequest(
@@ -134,7 +137,6 @@ data class Producto @JvmOverloads constructor(
     val descripcion: String = "",
     val stock: Int = 0,
     val imagenUrl: String = "",
-    // Campos agregados para Diseño v3
     val comision: Double = 0.0,
     val esNuevo: Boolean = false,
     val volumen: String = "",
