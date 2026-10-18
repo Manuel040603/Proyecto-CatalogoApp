@@ -27,7 +27,7 @@ import org.osmdroid.util.GeoPoint
 object AdminConfig {
     private val CORREOS_ADMIN = setOf("admin@catalogoapp.com")
 
-    private val CORREOS_SIN_VERIFICACION = setOf("admin@catalogoapp.com", "test@test.com")
+    private val CORREOS_SIN_VERIFICACION = setOf("admin@catalogoapp.com", "logistica.test@example.com", "directora.test@example.com")
 
     private val _administradores = MutableStateFlow<Set<String>>(emptySet())
     val administradores: StateFlow<Set<String>> = _administradores
