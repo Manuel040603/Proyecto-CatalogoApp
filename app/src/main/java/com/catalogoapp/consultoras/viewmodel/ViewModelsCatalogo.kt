@@ -234,7 +234,17 @@ class DevolucionViewModel @JvmOverloads constructor(
                 val palabrasNoAptas = listOf("broken", "damaged", "dirty", "crack", "torn", "roto", "dañado", "sucio")
                 val tieneDanio = palabrasNoAptas.any { etiquetaTexto.contains(it) }
 
-                val apto = confianza >= 0.65f && !tieneDanio
+                // VALIDACIÓN DE CATEGORÍA: Verificamos si la etiqueta coincide con la categoría del producto
+                val categoria = _uiState.value.productoSeleccionado?.categoria?.lowercase() ?: ""
+                val coincideCategoria = etiquetaTexto.contains(categoria) ||
+                                       (categoria.contains("maquillaje") && etiquetaTexto.contains("lipstick")) ||
+                                       (categoria.contains("fragrancias") && etiquetaTexto.contains("bottle"))
+
+                val isCatalogProduct = coincideCategoria
+                val isUndamaged = !tieneDanio
+                val isConfident = confianza >= 0.75f
+
+                val apto = isCatalogProduct && isUndamaged && isConfident
 
                 _uiState.value = _uiState.value.copy(
                     clasificando = false,
@@ -243,9 +253,13 @@ class DevolucionViewModel @JvmOverloads constructor(
                     confianza = confianza
                 )
 
-                // AUTOMATIZACIÓN: Si es APTO, actualizamos el inventario automáticamente
-                if (apto) {
+                // AUTOMATIZACIÓN: Si es APTO y coincide la categoría, actualizamos el inventario automáticamente
+                if (apto && coincideCategoria) {
                     confirmarActualizacionInventario()
+                } else if (apto && !coincideCategoria) {
+                    _uiState.value = _uiState.value.copy(
+                        mensaje = "Producto apto, pero la IA detectó algo diferente a la categoría ${_uiState.value.productoSeleccionado?.categoria}. Por favor, confirma manualmente."
+                    )
                 }
             } catch (excepcion: Exception) {
                 _uiState.value = _uiState.value.copy(clasificando = false, error = excepcion.message)
