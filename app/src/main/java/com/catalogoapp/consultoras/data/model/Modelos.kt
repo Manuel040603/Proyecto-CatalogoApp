@@ -1,5 +1,6 @@
 package com.catalogoapp.consultoras.data.model
 
+import com.google.firebase.firestore.PropertyName
 
 
 data class PreguntaCapacitacion @JvmOverloads constructor(
@@ -128,7 +129,7 @@ data class ResumenRepartoDto(
     val totalParadas: Int = 0,
     val paradasEntregadas: Int = 0
 )
-
+w
 data class Producto @JvmOverloads constructor(
     val id: String = "",
     val nombre: String = "",
@@ -136,7 +137,7 @@ data class Producto @JvmOverloads constructor(
     val precio: Double = 0.0,
     val descripcion: String = "",
     val stock: Int = 0,
-    val imagenUrl: String = "",
+    @get:PropertyName("imagenUrl") @set:PropertyName("imagenUrl") var imagenUrl: String = "",
     val comision: Double = 0.0,
     val esNuevo: Boolean = false,
     val volumen: String = "",
