@@ -90,7 +90,6 @@ fun ProfileScreen(
         ) {
             Spacer(modifier = Modifier.height(60.dp))
 
-            // Cabecera v3
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -141,7 +140,6 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Menú de Opciones v3 (Filas con subtítulos)
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 ProfileMenuOption(
                     label = "Datos y dirección",
@@ -232,7 +230,6 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(40.dp))
 
-            // Feedback de guardado
             when (val actual = estado) {
                 is ProfileUiState.Guardado -> {
                     Text(actual.mensaje, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
@@ -359,7 +356,6 @@ fun EditProfileScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Foto de Perfil
         Box(
             modifier = Modifier
                 .size(120.dp)
@@ -562,7 +558,6 @@ fun AppearanceScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Barra Superior v3
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -633,7 +628,6 @@ fun ThemeCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Vista previa del tema (Simulada con un círculo de color)
             Box(
                 modifier = Modifier
                     .size(40.dp)

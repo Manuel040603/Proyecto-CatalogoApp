@@ -100,11 +100,10 @@ fun HomeScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Tarjeta de Progreso v3
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { /* Navegar a Mi Progreso */ },
+                .clickable { },
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)

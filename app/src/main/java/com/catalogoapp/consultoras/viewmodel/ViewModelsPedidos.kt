@@ -465,7 +465,8 @@ class RepartoViewModel @JvmOverloads constructor(
     private val repartoRepository: RepartoRepository = RepartoRepository(),
     private val pedidoRepository: PedidoRepository = PedidoRepository(),
     private val repartidorRepository: RepartidorRepository = RepartidorRepository(),
-    private val detalleRepository: PedidoDetalleRepository = PedidoDetalleRepository()
+    private val detalleRepository: PedidoDetalleRepository = PedidoDetalleRepository(),
+    private val perfilRepository: ProfileRepository = ProfileRepository()
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RepartoUiState())
@@ -528,8 +529,10 @@ class RepartoViewModel @JvmOverloads constructor(
     fun cargarPedidosDisponibles() {
         _uiState.value = _uiState.value.copy(cargandoPedidos = true)
         viewModelScope.launch {
-            val correo = FirebaseAuth.getInstance().currentUser?.email
-            val resultado: Result<List<PedidoResponse>> = if (AdminConfig.esAdmin(correo)) {
+            val usuario = FirebaseAuth.getInstance().currentUser
+            val rol = usuario?.uid?.let { perfilRepository.obtenerPerfil(it).getOrNull()?.rol }
+            val veTodos = AdminConfig.esAdmin(usuario?.email) || rol == "LOGISTICA" || rol == "SUPER_ADMIN"
+            val resultado: Result<List<PedidoResponse>> = if (veTodos) {
                 detalleRepository.obtenerTodos().map { detalles -> detalles.map { it.aRespuesta() } }
             } else {
                 pedidoRepository.listarPedidos()
@@ -632,7 +635,18 @@ class RepartoViewModel @JvmOverloads constructor(
             )
             val resultado = repartoRepository.crearReparto(datos)
             _uiState.value = resultado.fold(
-                onSuccess = { reparto -> _uiState.value.copy(creando = false, repartoCreado = reparto) },
+                onSuccess = { reparto ->
+                    val idsEnReparto = reparto.paradas.map { it.pedidoId }.toSet()
+                    val pendientes = estado.pedidosDisponibles
+                        .filter { it.id in idsEnReparto && it.estado == "PENDIENTE" }
+                        .map { it.id }
+                    val fallos = sincronizarEstado(pendientes, "ENVIADO")
+                    _uiState.value.copy(
+                        creando = false,
+                        repartoCreado = reparto,
+                        error = if (fallos > 0) "El reparto se creó, pero no se pudo actualizar el estado de $fallos pedidos. Revísalos en la lista de pedidos" else null
+                    )
+                },
                 onFailure = { excepcion -> _uiState.value.copy(creando = false, error = MensajeError.de(excepcion, "No se pudo crear el reparto")) }
             )
         }
@@ -649,15 +663,32 @@ class RepartoViewModel @JvmOverloads constructor(
         }
     }
 
-    fun cargarReparto(id: Int) {
-        _uiState.value = _uiState.value.copy(cargandoReparto = true)
+    fun cargarReparto(id: Int, silencioso: Boolean = false, conservarError: String? = null) {
+        if (!silencioso) {
+            _uiState.value = _uiState.value.copy(
+                cargandoReparto = true,
+                repartoActual = _uiState.value.repartoActual?.takeIf { it.id == id }
+            )
+        }
         viewModelScope.launch {
             val resultado = repartoRepository.obtenerReparto(id)
             _uiState.value = resultado.fold(
-                onSuccess = { reparto -> _uiState.value.copy(cargandoReparto = false, repartoActual = reparto, error = null) },
-                onFailure = { excepcion -> _uiState.value.copy(cargandoReparto = false, error = MensajeError.de(excepcion, "Ocurrió un error")) }
+                onSuccess = { reparto -> _uiState.value.copy(cargandoReparto = false, repartoActual = reparto, error = conservarError) },
+                onFailure = { excepcion ->
+                    if (silencioso) {
+                        _uiState.value
+                    } else {
+                        _uiState.value.copy(cargandoReparto = false, error = MensajeError.de(excepcion, "Ocurrió un error"))
+                    }
+                }
             )
         }
+    }
+
+    private suspend fun sincronizarEstado(pedidoIds: List<Int>, estadoNuevo: String): Int {
+        var fallos = 0
+        pedidoIds.forEach { if (detalleRepository.actualizarEstado(it, estadoNuevo).isFailure) fallos++ }
+        return fallos
     }
 
     fun marcarParadaEntregada(idReparto: Int, idParada: Int) {
@@ -665,13 +696,17 @@ class RepartoViewModel @JvmOverloads constructor(
         viewModelScope.launch {
             val resultado = repartoRepository.marcarParadaEntregada(idReparto, idParada)
             _uiState.value = resultado.fold(
-                onSuccess = {
-                    _uiState.value.copy(actualizandoParadaId = null)
+                onSuccess = { parada ->
+                    val fallos = sincronizarEstado(listOf(parada.pedidoId), "ENTREGADO")
+                    _uiState.value.copy(
+                        actualizandoParadaId = null,
+                        error = if (fallos > 0) "La parada quedó entregada, pero no se pudo actualizar el estado del pedido. Revísalo en la lista de pedidos" else null
+                    )
                 },
                 onFailure = { excepcion -> _uiState.value.copy(actualizandoParadaId = null, error = MensajeError.de(excepcion, "Ocurrió un error")) }
             )
             if (resultado.isSuccess) {
-                cargarReparto(idReparto)
+                cargarReparto(idReparto, silencioso = true, conservarError = _uiState.value.error)
             }
         }
     }
