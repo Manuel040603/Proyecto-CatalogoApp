@@ -86,7 +86,26 @@ class ProfileRepository {
     private fun documento(uid: String) = coleccion.document(uid)
 
     suspend fun guardarPerfil(perfil: ConsultoraProfile): Result<Unit> = try {
-        documento(perfil.uid).set(perfil).await()
+        val datos = mapOf(
+            "uid" to perfil.uid,
+            "nombre" to perfil.nombre,
+            "email" to perfil.email,
+            "preferencias" to perfil.preferencias,
+            "fotoBase64" to perfil.fotoBase64,
+            "activo" to perfil.activo,
+            "rol" to perfil.rol,
+            "ultimaActualizacion" to perfil.ultimaActualizacion,
+            "nivel" to perfil.nivel,
+            "progreso" to perfil.progreso,
+            "dni" to perfil.dni,
+            "celular" to perfil.celular,
+            "direccionEntrega" to perfil.direccionEntrega,
+            "distrito" to perfil.distrito,
+            "referencia" to perfil.referencia,
+            "tipoComprobante" to perfil.tipoComprobante,
+            "esAdmin" to FieldValue.delete() // Eliminamos el campo obsoleto
+        )
+        documento(perfil.uid).set(datos).await()
         Result.success(Unit)
     } catch (e: Exception) {
         Result.failure(e)
@@ -94,7 +113,17 @@ class ProfileRepository {
 
     suspend fun obtenerPerfil(uid: String): Result<ConsultoraProfile?> = try {
         val snapshot = documento(uid).get().await()
-        Result.success(snapshot.toObject(ConsultoraProfile::class.java))
+        val perfil = snapshot.toObject(ConsultoraProfile::class.java)
+
+        // Lógica de migración: esAdmin (Boolean) -> rol (String)
+        val rolFinal = when {
+            perfil?.rol != null && perfil.rol != "CONSULTORA" -> perfil.rol
+            perfil?.esAdmin == true -> "DIRECTORA_COMERCIAL"
+            else -> "CONSULTORA"
+        }
+
+        val perfilMigrado = perfil?.copy(rol = rolFinal)
+        Result.success(perfilMigrado)
     } catch (e: Exception) {
         Result.failure(e)
     }
@@ -148,10 +177,31 @@ class ProfileRepository {
     }
 
     suspend fun actualizarEstado(uid: String, activo: Boolean): Result<Unit> = try {
-        documento(uid).update("activo", activo).await()
+        documento(uid).update(mapOf("activo" to activo)).await()
         Result.success(Unit)
     } catch (e: Exception) {
         Result.failure(e)
+    }
+
+    suspend fun asignarRol(correo: String, nuevoRol: String, asignadoPor: String): Result<Unit> = try {
+        val uid = obtenerUidPorCorreo(correo) ?: throw IllegalStateException("Usuario no encontrado")
+        documento(uid).update(
+            mapOf(
+                "rol" to nuevoRol,
+                "ultimaActualizacion" to System.currentTimeMillis(),
+                "asignadoPor" to asignadoPor
+            )
+        ).await()
+        Result.success(Unit)
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+
+    private suspend fun obtenerUidPorCorreo(correo: String): String? = try {
+        val query = coleccion.whereEqualTo("email", correo).get().await()
+        query.documents.firstOrNull()?.id
+    } catch (e: Exception) {
+        null
     }
 }
 

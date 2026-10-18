@@ -227,13 +227,26 @@ class DevolucionViewModel @JvmOverloads constructor(
                 val etiquetas = etiquetador.process(imagenEntrada).await()
                 val mejor = etiquetas.maxByOrNull { it.confidence }
                 val confianza = mejor?.confidence ?: 0f
-                val apto = confianza >= 0.65f
+
+                // Lógica de clasificación: Consideramos APTO si la confianza es alta
+                // y la etiqueta no contiene palabras relacionadas con daños
+                val etiquetaTexto = mejor?.text?.lowercase() ?: ""
+                val palabrasNoAptas = listOf("broken", "damaged", "dirty", "crack", "torn", "roto", "dañado", "sucio")
+                val tieneDanio = palabrasNoAptas.any { etiquetaTexto.contains(it) }
+
+                val apto = confianza >= 0.65f && !tieneDanio
+
                 _uiState.value = _uiState.value.copy(
                     clasificando = false,
                     resultadoApto = apto,
                     etiquetaDetectada = mejor?.text ?: "Sin detección clara",
                     confianza = confianza
                 )
+
+                // AUTOMATIZACIÓN: Si es APTO, actualizamos el inventario automáticamente
+                if (apto) {
+                    confirmarActualizacionInventario()
+                }
             } catch (excepcion: Exception) {
                 _uiState.value = _uiState.value.copy(clasificando = false, error = excepcion.message)
             }

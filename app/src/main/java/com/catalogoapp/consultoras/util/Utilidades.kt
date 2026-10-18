@@ -48,6 +48,8 @@ object AdminConfig {
     }
 
     fun esAdmin(email: String?): Boolean {
+        // Este método ahora es un fallback.
+        // La validación real debe hacerse contra el campo 'rol' del ConsultoraProfile.
         val correo = normalizar(email) ?: return false
         return CORREOS_ADMIN.contains(correo) || _administradores.value.contains(correo)
     }

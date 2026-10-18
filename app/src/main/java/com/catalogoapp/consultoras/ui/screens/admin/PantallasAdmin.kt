@@ -53,6 +53,7 @@ fun AdminConsultorasScreen(
 ) {
     val estado by viewModel.uiState.collectAsState()
     var consultoraEditando by remember { mutableStateOf<ConsultoraProfile?>(null) }
+    var creandoNueva by remember { mutableStateOf(false) }
 
     consultoraEditando?.let { consultora ->
         DialogoEditarConsultora(
@@ -79,6 +80,27 @@ fun AdminConsultorasScreen(
         )
     }
 
+    if (creandoNueva) {
+        DialogoNuevaConsultora(
+            guardando = estado.actualizando,
+            error = estado.error,
+            onGuardar = { nombre, email, dni, celular, preferencias, direccion, distrito, referencia ->
+                viewModel.registrarNuevaConsultora(
+                    nombre = nombre,
+                    email = email,
+                    dni = dni,
+                    celular = celular,
+                    preferencias = preferencias,
+                    direccionEntrega = direccion,
+                    distrito = distrito,
+                    referencia = referencia,
+                    alTerminar = { creandoNueva = false }
+                )
+            },
+            onCancelar = { creandoNueva = false }
+        )
+    }
+
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -87,6 +109,17 @@ fun AdminConsultorasScreen(
         ) {
             Text("Administrar consultoras", style = MaterialTheme.typography.headlineSmall)
             TextButton(onClick = onVolver) { Text("Volver") }
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Button(
+            onClick = { creandoNueva = true },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !estado.actualizando
+        ) {
+            Icon(Icons.Default.Add, contentDescription = null)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Agregar nueva consultora")
         }
         Spacer(modifier = Modifier.height(12.dp))
 
@@ -118,7 +151,7 @@ fun AdminConsultorasScreen(
                     actualizando = estado.actualizando,
                     mostrarRol = estado.esSuperAdmin && !AdminConfig.esSuperAdmin(consultora.email),
                     esAdministradora = estado.administradores.contains(consultora.email.trim().lowercase()),
-                    onCambiarRol = { esAdmin -> viewModel.cambiarAdministrador(consultora.email, esAdmin) },
+                    onCambiarRol = { esAdmin -> viewModel.cambiarAdministrador(consultora.email, if (esAdmin) "DIRECTORA_COMERCIAL" else "CONSULTORA") },
                     onEditar = {
                         viewModel.limpiarMensaje()
                         consultoraEditando = consultora
@@ -131,7 +164,109 @@ fun AdminConsultorasScreen(
 }
 
 @Composable
+private fun DialogoNuevaConsultora(
+    guardando: Boolean,
+    error: String?,
+    onGuardar: (String, String, String, String, String, String, String, String) -> Unit,
+    onCancelar: () -> Unit
+) {
+    var nombre by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var dni by remember { mutableStateOf("") }
+    var celular by remember { mutableStateOf("") }
+    var preferencias by remember { mutableStateOf("") }
+    var direccion by remember { mutableStateOf("") }
+    var distrito by remember { mutableStateOf("") }
+    var referencia by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = { if (!guardando) onCancelar() },
+        title = { Text("Registrar consultora") },
+        text = {
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedTextField(
+                    value = nombre,
+                    onValueChange = { nombre = it },
+                    label = { Text("Nombres y apellidos") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Correo electrónico") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = dni,
+                    onValueChange = { dni = it },
+                    label = { Text("DNI") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = celular,
+                    onValueChange = { celular = it },
+                    label = { Text("Celular") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = preferencias,
+                    onValueChange = { preferencias = it },
+                    label = { Text("Preferencias") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = direccion,
+                    onValueChange = { direccion = it },
+                    label = { Text("Dirección de entrega") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = distrito,
+                    onValueChange = { distrito = it },
+                    label = { Text("Distrito") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = referencia,
+                    onValueChange = { referencia = it },
+                    label = { Text("Referencia") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                error?.let {
+                    Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onGuardar(nombre, email, dni, celular, preferencias, direccion, distrito, referencia) },
+                enabled = !guardando
+            ) {
+                if (guardando) {
+                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                } else {
+                    Text("Registrar")
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onCancelar, enabled = !guardando) { Text("Cancelar") }
+        }
+    )
+}
+
+@Composable
 private fun TarjetaConsultora(
+
     consultora: ConsultoraProfile,
     actualizando: Boolean,
     mostrarRol: Boolean,

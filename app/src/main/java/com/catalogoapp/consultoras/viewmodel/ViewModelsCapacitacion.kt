@@ -113,6 +113,20 @@ class CapacitacionDetalleViewModel(
         }
     }
 
+    fun detenerNarracion() {
+        textToSpeech?.stop()
+        _uiState.value = _uiState.value.copy(reproduciendo = false)
+    }
+
+    fun pausarNarracion() {
+        // TTS nativo no tiene 'pause' explícito sencillo,
+        // simulamos guardando la posición o simplemente detenemos.
+        // Para una implementación real de pausa se requiere rastrear el índice de palabras.
+        textToSpeech?.stop()
+        _uiState.value = _uiState.value.copy(reproduciendo = false)
+    }
+
+
     fun iniciarEvaluacion() {
         val totalPreguntas = _uiState.value.capacitacion?.preguntas?.size ?: 0
         _uiState.value = _uiState.value.copy(

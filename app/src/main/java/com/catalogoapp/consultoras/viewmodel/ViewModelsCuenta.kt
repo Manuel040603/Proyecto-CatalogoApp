@@ -285,22 +285,16 @@ class AdminConsultorasViewModel(
         }
     }
 
-    fun cambiarAdministrador(correo: String, esAdmin: Boolean) {
+    fun cambiarRol(correo: String, nuevoRol: String) {
         val limpio = correo.trim().lowercase()
         if (limpio.isEmpty() || AdminConfig.esSuperAdmin(limpio)) return
         _uiState.value = _uiState.value.copy(actualizando = true, error = null, mensaje = null)
         viewModelScope.launch {
-            val resultado = if (esAdmin) {
-                adminRepository.asignar(limpio, FirebaseAuth.getInstance().currentUser?.email ?: "")
-            } else {
-                adminRepository.quitar(limpio)
-            }
+            val resultado = repository.asignarRol(limpio, nuevoRol, FirebaseAuth.getInstance().currentUser?.email ?: "")
             if (resultado.isSuccess) {
-                val nuevos = if (esAdmin) _uiState.value.administradores + limpio else _uiState.value.administradores - limpio
                 _uiState.value = _uiState.value.copy(
                     actualizando = false,
-                    administradores = nuevos,
-                    mensaje = if (esAdmin) "$limpio ahora es administradora" else "$limpio dejó de ser administradora"
+                    mensaje = "$limpio ahora tiene el rol de $nuevoRol"
                 )
             } else {
                 _uiState.value = _uiState.value.copy(
@@ -309,6 +303,14 @@ class AdminConsultorasViewModel(
                 )
             }
         }
+    }
+
+    fun cambiarAdministrador(correo: String, nuevoRol: String) {
+        cambiarRol(correo, nuevoRol)
+    }
+
+    fun limpiarMensaje() {
+        _uiState.value = _uiState.value.copy(mensaje = null)
     }
 
     fun cambiarEstado(uid: String, activo: Boolean) {
@@ -376,7 +378,52 @@ class AdminConsultorasViewModel(
         _uiState.value = _uiState.value.copy(errorEdicion = null)
     }
 
-    fun limpiarMensaje() {
-        _uiState.value = _uiState.value.copy(mensaje = null, error = null)
+    fun registrarNuevaConsultora(
+        nombre: String,
+        email: String,
+        dni: String,
+        celular: String,
+        preferencias: String,
+        direccionEntrega: String,
+        distrito: String,
+        referencia: String,
+        alTerminar: () -> Unit
+    ) {
+        val problema = validarEdicion(nombre.trim(), dni, celular)
+        if (problema != null) {
+            _uiState.value = _uiState.value.copy(error = problema)
+            return
+        }
+        _uiState.value = _uiState.value.copy(actualizando = true, error = null, mensaje = null)
+        viewModelScope.launch {
+            try {
+                // Nota: En una app real, crear un usuario en Firebase Auth requiere password.
+                // Aquí creamos el perfil en Firestore. Se asume que el usuario se registrará con este email.
+                val uid = java.util.UUID.randomUUID().toString()
+                val perfil = ConsultoraProfile(
+                    uid = uid,
+                    nombre = nombre.trim(),
+                    email = email.trim().lowercase(),
+                    preferencias = preferencias.trim(),
+                    dni = dni,
+                    celular = celular,
+                    direccionEntrega = direccionEntrega.trim(),
+                    distrito = distrito.trim(),
+                    referencia = referencia.trim(),
+                    activo = true,
+                    ultimaActualizacion = System.currentTimeMillis()
+                )
+                val resultado = repository.guardarPerfil(perfil)
+                if (resultado.isSuccess) {
+                    _uiState.value = _uiState.value.copy(actualizando = false, mensaje = "Consultora registrada exitosamente")
+                    alTerminar()
+                } else {
+                    _uiState.value = _uiState.value.copy(actualizando = false, error = "No se pudo registrar la consultora")
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(actualizando = false, error = e.message)
+            }
+        }
     }
+
 }

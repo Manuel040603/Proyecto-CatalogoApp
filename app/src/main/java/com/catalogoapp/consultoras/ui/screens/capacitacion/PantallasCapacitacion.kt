@@ -130,8 +130,28 @@ fun CapacitacionDetalleScreen(
             Text(capacitacion.descripcion, style = MaterialTheme.typography.bodyMedium)
             Spacer(modifier = Modifier.height(20.dp))
 
-            Button(onClick = { viewModel.reproducirPausar() }, modifier = Modifier.fillMaxWidth()) {
-                Text(if (estado.reproduciendo) "Detener narración" else "Escuchar narración de la capacitación")
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Button(
+                    onClick = { viewModel.reproducirPausar() },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Reproducir")
+                }
+                Button(
+                    onClick = { viewModel.pausarNarracion() },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Pausar")
+                }
+                Button(
+                    onClick = { viewModel.detenerNarracion() },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Detener")
+                }
             }
             Spacer(modifier = Modifier.height(20.dp))
 

@@ -33,10 +33,9 @@ data class ConsultoraProfile @JvmOverloads constructor(
     val preferencias: String = "",
     val fotoBase64: String = "",
     val activo: Boolean = true,
-    val esAdmin: Boolean = false,
+    val esAdmin: Boolean = false, // Deprecated: use rol
+    val rol: String = "CONSULTORA",
     val ultimaActualizacion: Long = System.currentTimeMillis(),
-    // Campos agregados para Diseño v3
-    val rol: String = "Consultora",
     val nivel: String = "Plata",
     val progreso: Double = 0.0,
     val dni: String = "",

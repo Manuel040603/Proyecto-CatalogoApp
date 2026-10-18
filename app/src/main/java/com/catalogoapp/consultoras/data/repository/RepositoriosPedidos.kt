@@ -360,7 +360,7 @@ class RepartidorRepository {
     }
 
     suspend fun cambiarActivo(id: String, activo: Boolean): Result<Unit> = try {
-        coleccion.document(id).update("activo", activo).await()
+        coleccion.document(id).update(mapOf("activo" to activo)).await()
         Result.success(Unit)
     } catch (e: Exception) {
         Result.failure(e)

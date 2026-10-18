@@ -68,8 +68,9 @@ fun ProfileScreen(
         AdminConfig.cargarRol(usuario.email)
     }
 
-    val administradores by AdminConfig.administradores.collectAsState()
-    val esAdmin = remember(usuario.email, administradores) { AdminConfig.esAdmin(usuario.email) }
+    val rolUsuario = perfilCargado?.rol ?: "CONSULTORA"
+    val esSuperAdmin = rolUsuario == "SUPER_ADMIN"
+    val esLogistica = rolUsuario == "LOGISTICA" || esSuperAdmin
 
     val fotoGuardada = remember(perfilCargado) {
         perfilCargado?.fotoBase64?.takeIf { it.isNotBlank() }?.let { base64ABitmap(it) }
@@ -131,7 +132,7 @@ fun ProfileScreen(
                         color = MaterialTheme.colorScheme.onBackground
                     )
                     Text(
-                        text = if (esAdmin) "Administrador" else "${perfilCargado?.rol ?: "Consultora"} · Nivel ${perfilCargado?.nivel ?: "Plata"}",
+                        text = if (esSuperAdmin) "Super Administrador" else "${perfilCargado?.rol ?: "Consultora"} · Nivel ${perfilCargado?.nivel ?: "Plata"}",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -178,19 +179,23 @@ fun ProfileScreen(
                     icon = Icons.Default.AccountBalanceWallet,
                     onClick = onIrAComisiones
                 )
-                ProfileMenuOption(
-                    label = "Devoluciones",
-                    sublabel = "Registrar un producto devuelto y ver el historial",
-                    icon = Icons.Default.Replay,
-                    onClick = onIrADevolucion
-                )
-                if (esAdmin) {
+                if (esLogistica) {
+                    ProfileMenuOption(
+                        label = "Devoluciones",
+                        sublabel = "Registrar un producto devuelto y ver el historial",
+                        icon = Icons.Default.Replay,
+                        onClick = onIrADevolucion
+                    )
+                }
+                if (esLogistica) {
                     ProfileMenuOption(
                         label = "Repartos y rutas",
                         sublabel = "Repartidores, repartos y mapa",
                         icon = Icons.Default.LocalShipping,
                         onClick = onIrAReparto
                     )
+                }
+                if (esSuperAdmin) {
                     ProfileMenuOption(
                         label = "Administrar productos",
                         sublabel = "Agregar, editar, eliminar y ver stock",
