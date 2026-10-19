@@ -1,4 +1,4 @@
-package com.catalogoapp.consultoras.data.model
+﻿package com.catalogoapp.consultoras.data.model
 
 import com.google.firebase.firestore.PropertyName
 
@@ -129,7 +129,6 @@ data class ResumenRepartoDto(
     val totalParadas: Int = 0,
     val paradasEntregadas: Int = 0
 )
-w
 data class Producto @JvmOverloads constructor(
     val id: String = "",
     val nombre: String = "",
