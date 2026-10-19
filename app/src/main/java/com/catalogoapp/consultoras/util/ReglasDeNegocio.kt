@@ -201,6 +201,8 @@ object MensajeError {
         val texto = error?.message
         return when {
             texto.isNullOrBlank() -> porDefecto
+            error is IllegalArgumentException && texto.contains("empty or null", ignoreCase = true) ->
+                "Completa todos los campos para continuar"
             texto.contains("no respondió a tiempo") -> "El servidor tardó demasiado en responder. Revisa tu conexión e intenta de nuevo"
             texto.contains("network", ignoreCase = true) -> SIN_CONEXION
             else -> texto

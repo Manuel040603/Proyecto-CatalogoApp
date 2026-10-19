@@ -1,9 +1,12 @@
 package com.catalogoapp.consultoras
 
+import android.Manifest
 import android.app.Activity
+import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -12,6 +15,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
+import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import com.catalogoapp.consultoras.navigation.CatalogoAppNavHost
@@ -23,9 +27,19 @@ class MainActivity : ComponentActivity() {
 
     private val authViewModel: AuthViewModel by viewModels()
 
+    private val permisoNotificaciones = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            permisoNotificaciones.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
 
         val themeManager = ThemeManager(this)
 

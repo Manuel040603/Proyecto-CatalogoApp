@@ -284,6 +284,7 @@ class PedidoViewModel @JvmOverloads constructor(
 
     fun crearPedido() {
         val estado = _uiState.value
+        if (estado.guardando) return
         val problema = validar(estado)
         if (problema != null) {
             _uiState.value = estado.copy(error = problema)
@@ -315,8 +316,11 @@ class PedidoViewModel @JvmOverloads constructor(
                 return@launch
             }
 
+            var fallosStock = 0
             estado.carrito.forEach { item ->
-                productRepository.descontarStockPorVenta(item.producto.id, item.cantidad)
+                if (productRepository.descontarStockPorVenta(item.producto.id, item.cantidad).isFailure) {
+                    fallosStock++
+                }
             }
 
             val ahora = System.currentTimeMillis()
@@ -348,6 +352,10 @@ class PedidoViewModel @JvmOverloads constructor(
             val guardado = detalleRepository.guardar(detalle)
             val avisoDetalle = guardado.exceptionOrNull()?.let {
                 "El pedido se registró, pero los datos de entrega no se guardaron en Firebase: ${MensajeError.de(it, "error desconocido")}"
+            } ?: if (fallosStock > 0) {
+                "El pedido se registró, pero no se pudo descontar el stock de $fallosStock producto(s)"
+            } else {
+                null
             }
 
             val uidCliente = detalle.uidConsultora
@@ -389,6 +397,7 @@ class PedidoViewModel @JvmOverloads constructor(
 
     fun avanzarEstado(pedido: PedidoResponse) {
         val nuevoEstado = siguienteEstadoDe(pedido.estado) ?: return
+        if (_uiState.value.actualizandoId != null) return
         _uiState.value = _uiState.value.copy(actualizandoId = pedido.id)
         viewModelScope.launch {
             val resultado = repository.cambiarEstado(pedido.id, nuevoEstado)
@@ -415,7 +424,12 @@ class PedidoViewModel @JvmOverloads constructor(
             _uiState.value = _uiState.value.copy(
                 actualizandoId = null,
                 pedidos = listaActualizada,
-                detalles = detallesActualizados
+                detalles = detallesActualizados,
+                aviso = if (guardadoDetalle.isFailure) {
+                    "El estado cambió, pero no se pudo guardar el historial en Firebase"
+                } else {
+                    _uiState.value.aviso
+                }
             )
         }
     }

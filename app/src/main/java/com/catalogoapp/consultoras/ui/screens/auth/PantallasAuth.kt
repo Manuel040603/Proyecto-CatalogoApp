@@ -27,10 +27,13 @@ fun LoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val estado by viewModel.uiState.collectAsState()
+    val aviso by viewModel.aviso.collectAsState()
 
     LaunchedEffect(estado) {
         if (estado is AuthUiState.Exito) {
-            onLoginExitoso()
+            if (viewModel.usuarioActual != null) {
+                onLoginExitoso()
+            }
             viewModel.resetEstado()
         }
     }
@@ -168,6 +171,14 @@ fun LoginScreen(
                     style = MaterialTheme.typography.bodySmall,
                     textAlign = TextAlign.Center
                 )
+            } else if (aviso != null) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = aviso ?: "",
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center
+                )
             }
         }
     }
@@ -185,6 +196,13 @@ fun RegisterScreen(
     val estado by viewModel.uiState.collectAsState()
 
     val contrasenasNoCoinciden = password.isNotEmpty() && password != confirmarPassword
+
+    LaunchedEffect(Unit) {
+        viewModel.resetEstado()
+    }
+    DisposableEffect(Unit) {
+        onDispose { viewModel.resetEstado() }
+    }
 
     Box(
         modifier = Modifier
@@ -356,6 +374,13 @@ fun ForgotPasswordScreen(
 ) {
     var email by remember { mutableStateOf("") }
     val estado by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.resetEstado()
+    }
+    DisposableEffect(Unit) {
+        onDispose { viewModel.resetEstado() }
+    }
 
     Column(
         modifier = Modifier.fillMaxSize().padding(24.dp),
