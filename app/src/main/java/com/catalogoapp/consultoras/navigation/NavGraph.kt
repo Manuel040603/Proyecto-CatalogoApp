@@ -48,41 +48,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.getValue
-
 import com.catalogoapp.consultoras.ui.screens.profile.EditProfileScreen
 import com.catalogoapp.consultoras.ui.screens.reparto.CrearRepartoScreen
 import com.catalogoapp.consultoras.ui.screens.reparto.ListaRepartosScreen
 import com.catalogoapp.consultoras.ui.screens.reparto.RepartoDetalleScreen
 import com.catalogoapp.consultoras.util.AdminConfig
 import com.catalogoapp.consultoras.viewmodel.*
-
-object Rutas {
-    const val LOGIN = "login"
-    const val REGISTRO = "registro"
-    const val RECUPERAR = "recuperar"
-    const val HOME = "home"
-    const val PERFIL = "perfil"
-    const val EDITAR_PERFIL = "editar_perfil"
-    const val APARIENCIA = "apariencia"
-    const val SEGUIMIENTO_PEDIDO = "seguimiento_pedido"
-
-    const val CATALOGO = "catalogo"
-    const val DETALLE_PRODUCTO = "detalle_producto"
-    const val DEVOLUCION = "devolucion"
-    const val CAPACITACIONES = "capacitaciones"
-    const val NUEVA_CAPACITACION = "nueva_capacitacion"
-    const val CAPACITACION_DETALLE = "capacitacion_detalle"
-    const val ADMIN_CONSULTORAS = "admin_consultoras"
-    const val AGREGAR_PRODUCTO = "agregar_producto"
-    const val ADMIN_PRODUCTOS = "admin_productos"
-    const val ADMIN_PEDIDOS = "admin_pedidos"
-    const val COMISIONES = "comisiones"
-    const val PEDIDOS = "pedidos"
-    const val NUEVO_PEDIDO = "nuevo_pedido"
-    const val LISTA_REPARTOS = "lista_repartos"
-    const val CREAR_REPARTO = "crear_reparto"
-    const val REPARTO_DETALLE = "reparto_detalle"
-}
 
 @Composable
 private fun PantallaConEspacioSuperior(contenido: @Composable () -> Unit) {
@@ -108,7 +79,6 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
             currentTheme = theme
         }
     }
-
 
     val destinoInicial = remember { if (authViewModel.sesionValida()) Rutas.HOME else Rutas.LOGIN }
 

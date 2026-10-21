@@ -9,7 +9,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -33,7 +32,6 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -45,62 +43,6 @@ import com.catalogoapp.consultoras.data.model.Devolucion
 import com.catalogoapp.consultoras.data.model.Producto
 import com.catalogoapp.consultoras.util.HoraLima
 import com.catalogoapp.consultoras.viewmodel.DevolucionViewModel
-
-val CoralColor = Color(0xFFE87D6E)
-val BeigeBackground = Color(0xFFFDF8F0)
-val DarkText = Color(0xFF2C2C2C)
-val SurfaceCard = Color(0xFFFFFFFF)
-val GreenAptoBg = Color(0xFFE8F5E9)
-val GreenAptoText = Color(0xFF2E7D32)
-val RedNoAptoBg = Color(0xFFFFEBEE)
-val RedNoAptoText = Color(0xFFC62828)
-val RedBannerBg = Color(0xFFB71C1C)
-
-object DevolucionTypography {
-    val topBarTitle = TextStyle(
-        fontFamily = FontFamily.Serif,
-        fontSize = 20.sp,
-        fontWeight = FontWeight.Medium,
-        textAlign = TextAlign.Center,
-        color = DarkText
-    )
-    val productName = TextStyle(
-        fontFamily = FontFamily.SansSerif,
-        fontSize = 14.sp,
-        fontWeight = FontWeight.Bold,
-        color = DarkText
-    )
-    val category = TextStyle(
-        fontFamily = FontFamily.SansSerif,
-        fontSize = 12.sp,
-        fontWeight = FontWeight.Normal,
-        color = Color.Gray
-    )
-    val metadata = TextStyle(
-        fontFamily = FontFamily.SansSerif,
-        fontSize = 11.sp,
-        fontWeight = FontWeight.Medium,
-        color = Color.Gray
-    )
-    val mainButton = TextStyle(
-        fontFamily = FontFamily.SansSerif,
-        fontSize = 15.sp,
-        fontWeight = FontWeight.SemiBold,
-        color = Color.White
-    )
-    val guideText = TextStyle(
-        fontFamily = FontFamily.SansSerif,
-        fontSize = 13.sp,
-        fontWeight = FontWeight.Medium,
-        color = DarkText
-    )
-    val guideSubtext = TextStyle(
-        fontFamily = FontFamily.SansSerif,
-        fontSize = 13.sp,
-        fontWeight = FontWeight.Normal,
-        color = Color.Gray
-    )
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -153,7 +95,6 @@ fun DevolucionScreen(
         ) {
             if (estado.productoSeleccionado == null) {
                 Column(modifier = Modifier.fillMaxSize()) {
-                    // Barra de búsqueda (Mock visual)
                     OutlinedTextField(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
@@ -321,7 +262,7 @@ fun DevolucionScreen(
                                     }
                                     drawPath(
                                         path = path,
-                                        color = Color(0xFFBCAAA4), // un color gris/marrón claro para los dashes
+                                        color = Color(0xFFBCAAA4),
                                         style = Stroke(
                                             width = strokeWidth,
                                             pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
@@ -390,7 +331,6 @@ fun DevolucionScreen(
                             )
                         }
                     } else {
-                        // Foto tomada
                         Image(
                             bitmap = estado.foto!!.asImageBitmap(),
                             contentDescription = "Foto tomada",
@@ -606,7 +546,6 @@ private fun TarjetaDevolucion(devolucion: Devolucion) {
             modifier = Modifier.padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Un box simulando imagen para el historial ya que Devolucion no tiene imagen
             Box(
                 modifier = Modifier
                     .size(50.dp)
