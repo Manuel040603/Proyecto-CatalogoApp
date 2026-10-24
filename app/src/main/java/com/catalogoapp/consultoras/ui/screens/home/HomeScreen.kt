@@ -17,7 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.catalogoapp.consultoras.util.AdminConfig
+import com.catalogoapp.consultoras.util.ConfiguracionAdmin
 import com.catalogoapp.consultoras.viewmodel.HomeViewModel
 import com.google.firebase.auth.FirebaseAuth
 
@@ -33,8 +33,8 @@ fun HomeScreen(
 ) {
     val estado by viewModel.uiState.collectAsState()
     val correo = remember(uid) { FirebaseAuth.getInstance().currentUser?.email }
-    val administradores by AdminConfig.administradores.collectAsState()
-    val esAdmin = remember(correo, administradores) { AdminConfig.esAdmin(correo) }
+    val administradores by ConfiguracionAdmin.administradores.collectAsState()
+    val esAdmin = remember(correo, administradores) { ConfiguracionAdmin.esAdmin(correo) }
     var mostrarDialogoCampana by remember { mutableStateOf(false) }
     val nombreMostrado = estado.nombre.ifBlank { correo?.substringBefore('@') ?: "Consultora" }
 

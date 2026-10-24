@@ -17,17 +17,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.catalogoapp.consultoras.util.AdminConfig
+import com.catalogoapp.consultoras.util.ConfiguracionAdmin
 import com.catalogoapp.consultoras.util.base64ABitmap
 import com.catalogoapp.consultoras.viewmodel.ProfileUiState
 import com.catalogoapp.consultoras.viewmodel.ProfileViewModel
 import com.google.firebase.auth.FirebaseUser
 
+// Pantalla principal de perfil del usuario
 @Composable
-fun ProfileScreen(
+fun PerfilScreen(
     usuario: FirebaseUser,
     viewModel: ProfileViewModel,
     onCerrarSesion: () -> Unit,
@@ -53,7 +56,7 @@ fun ProfileScreen(
         viewModel.cargarPerfil(usuario.uid)
         viewModel.registrarTokenFcm()
         viewModel.programarRecordatorioPedidos(context)
-        AdminConfig.cargarRol(usuario.email)
+        ConfiguracionAdmin.cargarRol(usuario.email)
     }
 
     val rolUsuario = perfilCargado?.rol ?: "CONSULTORA"
@@ -96,7 +99,7 @@ fun ProfileScreen(
                             bitmap = fotoGuardada.asImageBitmap(),
                             contentDescription = "Foto de perfil",
                             modifier = Modifier.fillMaxSize().clip(CircleShape),
-                            contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                            contentScale = ContentScale.Crop
                         )
                     } else {
                         Icon(
@@ -235,7 +238,7 @@ fun ProfileScreen(
 fun ProfileMenuOption(
     label: String,
     sublabel: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: ImageVector,
     onClick: () -> Unit
 ) {
     Row(

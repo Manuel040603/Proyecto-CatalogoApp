@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.catalogoapp.consultoras.data.model.ConsultoraProfile
 import com.catalogoapp.consultoras.data.repository.AdminRepository
 import com.catalogoapp.consultoras.data.repository.ProfileRepository
-import com.catalogoapp.consultoras.util.AdminConfig
+import com.catalogoapp.consultoras.util.ConfiguracionAdmin
 import com.catalogoapp.consultoras.util.MensajeError
 import com.catalogoapp.consultoras.util.PedidoValidacion
 import com.google.firebase.auth.FirebaseAuth
@@ -35,7 +35,7 @@ class AdminConsultorasViewModel(
 
     init {
         val correoActual = FirebaseAuth.getInstance().currentUser?.email
-        val esSuper = AdminConfig.esSuperAdmin(correoActual)
+        val esSuper = ConfiguracionAdmin.esSuperAdmin(correoActual)
         _uiState.value = _uiState.value.copy(esSuperAdmin = esSuper)
         if (esSuper) cargarAdministradores()
         viewModelScope.launch {
@@ -63,7 +63,7 @@ class AdminConsultorasViewModel(
 
     fun cambiarRol(correo: String, nuevoRol: String) {
         val limpio = correo.trim().lowercase()
-        if (limpio.isEmpty() || AdminConfig.esSuperAdmin(limpio)) return
+        if (limpio.isEmpty() || ConfiguracionAdmin.esSuperAdmin(limpio)) return
         _uiState.value = _uiState.value.copy(actualizando = true, error = null, mensaje = null)
         viewModelScope.launch {
             val resultado = repository.asignarRol(limpio, nuevoRol, FirebaseAuth.getInstance().currentUser?.email ?: "")

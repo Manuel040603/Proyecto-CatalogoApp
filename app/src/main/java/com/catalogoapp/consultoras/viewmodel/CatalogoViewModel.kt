@@ -24,7 +24,6 @@ class CatalogoViewModel @JvmOverloads constructor(
     val uiState: StateFlow<CatalogoUiState> = _uiState
 
     private var todosLosProductos: List<Producto> = emptyList()
-    private var siembraIntentada = false
 
     init {
         viewModelScope.launch {
@@ -35,11 +34,6 @@ class CatalogoViewModel @JvmOverloads constructor(
                 .collect { productos ->
                     todosLosProductos = productos
                     aplicarFiltro()
-
-                    if (productos.isEmpty() && !siembraIntentada) {
-                        siembraIntentada = true
-                        cargarProductosDeEjemplo()
-                    }
                 }
         }
     }
@@ -53,12 +47,6 @@ class CatalogoViewModel @JvmOverloads constructor(
         val categoria = _uiState.value.categoriaSeleccionada
         val filtrados = if (categoria == null) todosLosProductos else todosLosProductos.filter { it.categoria == categoria }
         _uiState.value = _uiState.value.copy(cargando = false, productos = filtrados)
-    }
-
-    fun cargarProductosDeEjemplo() {
-        viewModelScope.launch {
-            repository.sembrarProductosDeEjemplo()
-        }
     }
 
     fun obtenerProductoPorId(id: String): Producto? {

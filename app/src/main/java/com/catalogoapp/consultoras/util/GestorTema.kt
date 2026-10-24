@@ -11,17 +11,17 @@ import kotlinx.coroutines.flow.map
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
-class ThemeManager(private val context: Context) {
+class GestorTema(private val context: Context) {
     companion object {
         private val THEME_KEY = stringPreferencesKey("selected_theme")
     }
 
-    val themeFlow: Flow<String> = context.dataStore.data
+    val flujoTema: Flow<String> = context.dataStore.data
         .map { preferences ->
             preferences[THEME_KEY] ?: "system"
         }
 
-    suspend fun setTheme(theme: String) {
+    suspend fun guardarTema(theme: String) {
         context.dataStore.edit { preferences ->
             preferences[THEME_KEY] = theme
         }

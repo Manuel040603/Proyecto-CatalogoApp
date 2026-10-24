@@ -8,7 +8,7 @@ import com.catalogoapp.consultoras.data.repository.CampanaRepository
 import com.catalogoapp.consultoras.data.repository.PedidoRepository
 import com.catalogoapp.consultoras.data.repository.ProductRepository
 import com.catalogoapp.consultoras.data.repository.ProfileRepository
-import com.catalogoapp.consultoras.util.AdminConfig
+import com.catalogoapp.consultoras.util.ConfiguracionAdmin
 import com.catalogoapp.consultoras.util.Inventario
 import com.catalogoapp.consultoras.util.MensajeError
 import com.catalogoapp.consultoras.util.NivelConsultora
@@ -53,7 +53,7 @@ class HomeViewModel @JvmOverloads constructor(
         _uiState.value = HomeUiState()
 
         viewModelScope.launch {
-            AdminConfig.cargarRol(FirebaseAuth.getInstance().currentUser?.email)
+            ConfiguracionAdmin.cargarRol(FirebaseAuth.getInstance().currentUser?.email)
         }
 
         trabajoCampana?.cancel()

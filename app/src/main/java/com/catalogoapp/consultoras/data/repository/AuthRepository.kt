@@ -1,7 +1,7 @@
 package com.catalogoapp.consultoras.data.repository
 
 import com.catalogoapp.consultoras.data.model.ConsultoraProfile
-import com.catalogoapp.consultoras.util.AdminConfig
+import com.catalogoapp.consultoras.util.ConfiguracionAdmin
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
@@ -26,7 +26,7 @@ class AuthRepository {
     suspend fun iniciarSesion(email: String, password: String): Result<FirebaseUser> = try {
         val result = auth.signInWithEmailAndPassword(email, password).await()
         val user = result.user ?: throw IllegalStateException("Usuario no encontrado")
-        if (!user.isEmailVerified && !AdminConfig.sinVerificacion(user.email)) {
+        if (!user.isEmailVerified && !ConfiguracionAdmin.sinVerificacion(user.email)) {
             try {
                 user.sendEmailVerification().await()
             } catch (e: Exception) {
@@ -54,7 +54,7 @@ class AuthRepository {
 
     fun sesionValida(): Boolean {
         val user = auth.currentUser ?: return false
-        if (user.isEmailVerified || AdminConfig.sinVerificacion(user.email)) return true
+        if (user.isEmailVerified || ConfiguracionAdmin.sinVerificacion(user.email)) return true
         auth.signOut()
         return false
     }

@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import com.catalogoapp.consultoras.viewmodel.AuthUiState
 import com.catalogoapp.consultoras.viewmodel.AuthViewModel
 
+// Pantalla de inicio de sesión
 @Composable
 fun LoginScreen(
     viewModel: AuthViewModel,

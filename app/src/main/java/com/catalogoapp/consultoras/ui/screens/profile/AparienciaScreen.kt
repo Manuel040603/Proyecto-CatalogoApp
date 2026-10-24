@@ -1,5 +1,6 @@
 package com.catalogoapp.consultoras.ui.screens.profile
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -20,8 +21,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
+// Pantalla para cambiar la apariencia (tema) de la aplicación
 @Composable
-fun AppearanceScreen(
+fun AparienciaScreen(
     currentTheme: String,
     onThemeSelected: (String) -> Unit,
     onVolver: () -> Unit
@@ -99,7 +101,7 @@ fun ThemeCard(
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainer
         ),
-        border = if (isSelected) androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
+        border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(

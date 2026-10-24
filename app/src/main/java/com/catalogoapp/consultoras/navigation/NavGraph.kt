@@ -3,15 +3,11 @@ package com.catalogoapp.consultoras.navigation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import android.widget.Toast
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
+import android.widget.Toast
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -19,40 +15,36 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.compose.material3.CircularProgressIndicator
+import kotlinx.coroutines.launch
+
 import com.catalogoapp.consultoras.ui.screens.admin.AdminConsultorasScreen
 import com.catalogoapp.consultoras.ui.screens.admin.AdminPedidosScreen
 import com.catalogoapp.consultoras.ui.screens.admin.AdminProductosScreen
 import com.catalogoapp.consultoras.ui.screens.admin.AgregarProductoScreen
 import com.catalogoapp.consultoras.ui.screens.comision.ComisionesScreen
-import com.catalogoapp.consultoras.ui.screens.auth.ForgotPasswordScreen
+import com.catalogoapp.consultoras.ui.screens.auth.RecuperarClaveScreen
 import com.catalogoapp.consultoras.ui.screens.auth.LoginScreen
-import com.catalogoapp.consultoras.ui.screens.auth.RegisterScreen
+import com.catalogoapp.consultoras.ui.screens.auth.RegistroScreen
 import com.catalogoapp.consultoras.ui.screens.capacitacion.CapacitacionDetalleScreen
 import com.catalogoapp.consultoras.ui.screens.capacitacion.CapacitacionListScreen
 import com.catalogoapp.consultoras.ui.screens.capacitacion.NuevaCapacitacionScreen
 import com.catalogoapp.consultoras.ui.screens.catalogo.CatalogoScreen
 import com.catalogoapp.consultoras.ui.screens.catalogo.DetalleProductoScreen
 import com.catalogoapp.consultoras.ui.screens.reparto.SeguimientoPedidoScreen
+import com.catalogoapp.consultoras.ui.screens.reparto.CrearRepartoScreen
+import com.catalogoapp.consultoras.ui.screens.reparto.ListaRepartosScreen
+import com.catalogoapp.consultoras.ui.screens.reparto.RepartoDetalleScreen
 import com.catalogoapp.consultoras.ui.screens.devolucion.DevolucionScreen
 import com.catalogoapp.consultoras.ui.screens.home.HomeScreen
 import com.catalogoapp.consultoras.ui.screens.main.MainScreen
 import com.catalogoapp.consultoras.ui.screens.pedido.NuevoPedidoScreen
 import com.catalogoapp.consultoras.ui.screens.pedido.PedidoListScreen
-import com.catalogoapp.consultoras.ui.screens.profile.AppearanceScreen
-import com.catalogoapp.consultoras.ui.screens.profile.ProfileScreen
-import com.catalogoapp.consultoras.util.ThemeManager
-import kotlinx.coroutines.launch
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.runtime.getValue
-import com.catalogoapp.consultoras.ui.screens.profile.EditProfileScreen
-import com.catalogoapp.consultoras.ui.screens.reparto.CrearRepartoScreen
-import com.catalogoapp.consultoras.ui.screens.reparto.ListaRepartosScreen
-import com.catalogoapp.consultoras.ui.screens.reparto.RepartoDetalleScreen
-import com.catalogoapp.consultoras.util.AdminConfig
+import com.catalogoapp.consultoras.ui.screens.profile.AparienciaScreen
+import com.catalogoapp.consultoras.ui.screens.profile.PerfilScreen
+import com.catalogoapp.consultoras.ui.screens.profile.EditarPerfilScreen
+import com.catalogoapp.consultoras.util.GestorTema
+import com.catalogoapp.consultoras.util.ConfiguracionAdmin
 import com.catalogoapp.consultoras.viewmodel.*
 
 @Composable
@@ -66,16 +58,16 @@ private fun PantallaConEspacioSuperior(contenido: @Composable () -> Unit) {
 fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
     val navController: NavHostController = rememberNavController()
     val context = LocalContext.current
-    val profileViewModel = remember { ProfileViewModel() }
-    val pedidoViewModel = remember { PedidoViewModel() }
-    val repartoViewModel = remember { RepartoViewModel() }
-    val homeViewModel = remember { HomeViewModel() }
+    val profileViewModel: ProfileViewModel = viewModel()
+    val pedidoViewModel: PedidoViewModel = viewModel()
+    val repartoViewModel: RepartoViewModel = viewModel()
+    val homeViewModel: HomeViewModel = viewModel()
     var currentTheme by remember { mutableStateOf("system") }
     val scope = rememberCoroutineScope()
-    val themeManager = remember { ThemeManager(context) }
+    val gestorTema = remember { GestorTema(context) }
 
     LaunchedEffect(Unit) {
-        themeManager.themeFlow.collect { theme ->
+        gestorTema.flujoTema.collect { theme ->
             currentTheme = theme
         }
     }
@@ -101,7 +93,7 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
 
         composable(Rutas.REGISTRO) {
             PantallaConEspacioSuperior {
-                RegisterScreen(
+                RegistroScreen(
                     viewModel = authViewModel,
                     onRegistroExitoso = { navController.popBackStack() },
                     onIrALogin = { navController.popBackStack() }
@@ -111,7 +103,7 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
 
         composable(Rutas.RECUPERAR) {
             PantallaConEspacioSuperior {
-                ForgotPasswordScreen(
+                RecuperarClaveScreen(
                     viewModel = authViewModel,
                     onVolver = { navController.popBackStack() }
                 )
@@ -146,7 +138,7 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
             val usuario = authViewModel.usuarioActual
             if (usuario != null) {
                 MainScreen(navController = navController) {
-                    ProfileScreen(
+                    PerfilScreen(
                         usuario = usuario,
                         viewModel = profileViewModel,
                         onCerrarSesion = {
@@ -175,7 +167,7 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
             val usuario = authViewModel.usuarioActual
             if (usuario != null) {
                 PantallaConEspacioSuperior {
-                    EditProfileScreen(
+                    EditarPerfilScreen(
                         usuario = usuario,
                         viewModel = profileViewModel,
                         onVolver = { navController.popBackStack() }
@@ -188,11 +180,11 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
 
         composable(Rutas.APARIENCIA) {
             PantallaConEspacioSuperior {
-                AppearanceScreen(
+                AparienciaScreen(
                     currentTheme = currentTheme,
                     onThemeSelected = { tema ->
                         scope.launch {
-                            themeManager.setTheme(tema)
+                            gestorTema.guardarTema(tema)
                         }
                     },
                     onVolver = { navController.popBackStack() }
@@ -368,8 +360,8 @@ fun CatalogoAppNavHost(authViewModel: AuthViewModel) {
 
         composable(Rutas.CAPACITACIONES) {
             val capacitacionViewModel = viewModel<CapacitacionViewModel>()
-            val administradoresActuales by AdminConfig.administradores.collectAsState()
-            val esAdmin = remember(administradoresActuales) { AdminConfig.esAdmin(authViewModel.usuarioActual?.email) }
+            val administradoresActuales by ConfiguracionAdmin.administradores.collectAsState()
+            val esAdmin = remember(administradoresActuales) { ConfiguracionAdmin.esAdmin(authViewModel.usuarioActual?.email) }
             MainScreen(navController = navController) {
                 CapacitacionListScreen(
                     viewModel = capacitacionViewModel,

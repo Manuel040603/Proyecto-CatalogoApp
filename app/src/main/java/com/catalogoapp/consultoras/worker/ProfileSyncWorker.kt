@@ -5,7 +5,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.catalogoapp.consultoras.data.model.ConsultoraProfile
 import com.catalogoapp.consultoras.data.repository.ProfileRepository
-import com.catalogoapp.consultoras.util.AdminConfig
+import com.catalogoapp.consultoras.util.ConfiguracionAdmin
 
 class ProfileSyncWorker(
     context: Context,
@@ -27,7 +27,7 @@ class ProfileSyncWorker(
             nombre = nombre,
             email = email,
             preferencias = preferencias,
-            esAdmin = AdminConfig.esAdmin(email)
+            esAdmin = ConfiguracionAdmin.esAdmin(email)
         )
 
         val resultado = repository.guardarPerfil(perfil)

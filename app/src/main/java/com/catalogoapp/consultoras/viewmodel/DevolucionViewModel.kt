@@ -7,7 +7,7 @@ import com.catalogoapp.consultoras.data.model.Devolucion
 import com.catalogoapp.consultoras.data.model.Producto
 import com.catalogoapp.consultoras.data.repository.DevolucionRepository
 import com.catalogoapp.consultoras.data.repository.ProductRepository
-import com.catalogoapp.consultoras.util.AdminConfig
+import com.catalogoapp.consultoras.util.ConfiguracionAdmin
 import com.catalogoapp.consultoras.util.MensajeError
 import com.google.firebase.auth.FirebaseAuth
 import com.google.mlkit.vision.common.InputImage
@@ -63,8 +63,8 @@ class DevolucionViewModel @JvmOverloads constructor(
         }
         _uiState.value = _uiState.value.copy(cargandoHistorial = true)
         viewModelScope.launch {
-            AdminConfig.cargarRol(usuario.email)
-            val esAdmin = AdminConfig.esAdmin(usuario.email)
+            ConfiguracionAdmin.cargarRol(usuario.email)
+            val esAdmin = ConfiguracionAdmin.esAdmin(usuario.email)
             _uiState.value = _uiState.value.copy(historialDeTodas = esAdmin)
             val resultado = if (esAdmin) {
                 devolucionRepository.obtenerTodas()

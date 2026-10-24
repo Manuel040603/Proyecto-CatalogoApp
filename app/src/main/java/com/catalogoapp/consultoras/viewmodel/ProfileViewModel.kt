@@ -11,7 +11,7 @@ import androidx.work.WorkManager
 import com.catalogoapp.consultoras.data.model.ConsultoraProfile
 import com.catalogoapp.consultoras.data.repository.PedidoRepository
 import com.catalogoapp.consultoras.data.repository.ProfileRepository
-import com.catalogoapp.consultoras.util.AdminConfig
+import com.catalogoapp.consultoras.util.ConfiguracionAdmin
 import com.catalogoapp.consultoras.worker.ProfileSyncWorker
 import com.catalogoapp.consultoras.worker.RecordatorioPedidoWorker
 import com.google.firebase.auth.FirebaseAuth
@@ -104,7 +104,7 @@ class ProfileViewModel(
                 email = email,
                 preferencias = preferencias,
                 fotoBase64 = fotoBase64,
-                esAdmin = AdminConfig.esAdmin(email),
+                esAdmin = ConfiguracionAdmin.esAdmin(email),
                 dni = dni ?: existente.dni,
                 celular = celular ?: existente.celular,
                 direccionEntrega = direccionEntrega ?: existente.direccionEntrega,

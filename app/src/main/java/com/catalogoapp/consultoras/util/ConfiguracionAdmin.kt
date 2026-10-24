@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.tasks.await
 
-object AdminConfig {
+object ConfiguracionAdmin {
     private val CORREOS_ADMIN = setOf("admin@catalogoapp.com")
 
     private val CORREOS_SIN_VERIFICACION = setOf("admin@catalogoapp.com", "test@test.com", "logistica.test@example.com", "directora.test@example.com")

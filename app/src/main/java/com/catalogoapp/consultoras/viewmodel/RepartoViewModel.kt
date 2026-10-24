@@ -13,7 +13,7 @@ import com.catalogoapp.consultoras.data.repository.PedidoRepository
 import com.catalogoapp.consultoras.data.repository.ProfileRepository
 import com.catalogoapp.consultoras.data.repository.RepartidorRepository
 import com.catalogoapp.consultoras.data.repository.RepartoRepository
-import com.catalogoapp.consultoras.util.AdminConfig
+import com.catalogoapp.consultoras.util.ConfiguracionAdmin
 import com.catalogoapp.consultoras.util.MensajeError
 import com.catalogoapp.consultoras.util.PedidoValidacion
 import com.google.firebase.auth.FirebaseAuth
@@ -127,7 +127,7 @@ class RepartoViewModel @JvmOverloads constructor(
         viewModelScope.launch {
             val usuario = FirebaseAuth.getInstance().currentUser
             val rol = usuario?.uid?.let { perfilRepository.obtenerPerfil(it).getOrNull()?.rol }
-            val veTodos = AdminConfig.esAdmin(usuario?.email) || rol == "LOGISTICA" || rol == "SUPER_ADMIN"
+            val veTodos = ConfiguracionAdmin.esAdmin(usuario?.email) || rol == "LOGISTICA" || rol == "SUPER_ADMIN"
             val resultado: Result<List<PedidoResponse>> = if (veTodos) {
                 detalleRepository.obtenerTodos().map { detalles -> detalles.map { it.aRespuesta() } }
             } else {

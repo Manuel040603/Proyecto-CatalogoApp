@@ -9,8 +9,9 @@ import androidx.compose.ui.unit.dp
 import com.catalogoapp.consultoras.viewmodel.AuthUiState
 import com.catalogoapp.consultoras.viewmodel.AuthViewModel
 
+// Pantalla de recuperación de clave
 @Composable
-fun ForgotPasswordScreen(
+fun RecuperarClaveScreen(
     viewModel: AuthViewModel,
     onVolver: () -> Unit
 ) {

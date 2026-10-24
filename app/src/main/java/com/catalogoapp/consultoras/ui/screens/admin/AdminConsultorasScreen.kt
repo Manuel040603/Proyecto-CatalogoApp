@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.catalogoapp.consultoras.data.model.ConsultoraProfile
-import com.catalogoapp.consultoras.util.AdminConfig
+import com.catalogoapp.consultoras.util.ConfiguracionAdmin
 import com.catalogoapp.consultoras.util.PedidoValidacion
 import com.catalogoapp.consultoras.viewmodel.AdminConsultorasViewModel
 
@@ -122,7 +122,7 @@ fun AdminConsultorasScreen(
                 TarjetaConsultora(
                     consultora = consultora,
                     actualizando = estado.actualizando,
-                    mostrarRol = estado.esSuperAdmin && !AdminConfig.esSuperAdmin(consultora.email),
+                    mostrarRol = estado.esSuperAdmin && !ConfiguracionAdmin.esSuperAdmin(consultora.email),
                     esAdministradora = estado.administradores.contains(consultora.email.trim().lowercase()),
                     onCambiarRol = { esAdmin -> viewModel.cambiarAdministrador(consultora.email, if (esAdmin) "DIRECTORA_COMERCIAL" else "CONSULTORA") },
                     onEditar = {

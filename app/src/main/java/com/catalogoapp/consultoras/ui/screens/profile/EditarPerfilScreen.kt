@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -35,8 +36,9 @@ import com.catalogoapp.consultoras.viewmodel.ProfileUiState
 import com.catalogoapp.consultoras.viewmodel.ProfileViewModel
 import com.google.firebase.auth.FirebaseUser
 
+// Pantalla para la edición del perfil
 @Composable
-fun EditProfileScreen(
+fun EditarPerfilScreen(
     usuario: FirebaseUser,
     viewModel: ProfileViewModel,
     onVolver: () -> Unit
@@ -130,7 +132,7 @@ fun EditProfileScreen(
                     bitmap = fotoAMostrar.asImageBitmap(),
                     contentDescription = "Foto de perfil",
                     modifier = Modifier.fillMaxSize().clip(CircleShape),
-                    contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                    contentScale = ContentScale.Crop
                 )
             } else {
                 Icon(Icons.Default.Person, contentDescription = null, modifier = Modifier.size(60.dp), tint = MaterialTheme.colorScheme.primary)

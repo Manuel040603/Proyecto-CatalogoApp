@@ -35,7 +35,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.catalogoapp.consultoras.data.model.ParadaRepartoDto
 import com.catalogoapp.consultoras.data.repository.ProfileRepository
-import com.catalogoapp.consultoras.util.AdminConfig
+import com.catalogoapp.consultoras.util.ConfiguracionAdmin
 import com.catalogoapp.consultoras.util.HoraLima
 import com.catalogoapp.consultoras.util.PolylineDecoder
 import com.catalogoapp.consultoras.viewmodel.RepartoViewModel
@@ -63,9 +63,9 @@ fun RepartoDetalleScreen(
         val uid = usuarioActual?.uid ?: return@LaunchedEffect
         rolPerfil = ProfileRepository().obtenerPerfil(uid).getOrNull()?.rol ?: ""
     }
-    val administradores by AdminConfig.administradores.collectAsState()
+    val administradores by ConfiguracionAdmin.administradores.collectAsState()
     val esOperador = remember(administradores, rolPerfil, usuarioActual?.email) {
-        AdminConfig.esAdmin(usuarioActual?.email) || rolPerfil == "LOGISTICA" || rolPerfil == "SUPER_ADMIN"
+        ConfiguracionAdmin.esAdmin(usuarioActual?.email) || rolPerfil == "LOGISTICA" || rolPerfil == "SUPER_ADMIN"
     }
     var permisoUbicacion by remember {
         mutableStateOf(

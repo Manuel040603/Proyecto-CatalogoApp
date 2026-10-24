@@ -20,7 +20,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import com.catalogoapp.consultoras.navigation.CatalogoAppNavHost
 import com.catalogoapp.consultoras.ui.theme.CatalogoAppTheme
-import com.catalogoapp.consultoras.util.ThemeManager
+import com.catalogoapp.consultoras.util.GestorTema
 import com.catalogoapp.consultoras.viewmodel.AuthViewModel
 
 class MainActivity : ComponentActivity() {
@@ -41,10 +41,10 @@ class MainActivity : ComponentActivity() {
             permisoNotificaciones.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
 
-        val themeManager = ThemeManager(this)
+        val themeManager = GestorTema(this)
 
         setContent {
-            val currentTheme by themeManager.themeFlow.collectAsState(initial = "system")
+            val currentTheme by themeManager.flujoTema.collectAsState(initial = "system")
             val view = LocalView.current
             if (!view.isInEditMode) {
                 SideEffect {

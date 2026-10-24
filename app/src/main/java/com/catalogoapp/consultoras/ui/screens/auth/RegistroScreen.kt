@@ -20,8 +20,9 @@ import androidx.compose.ui.unit.dp
 import com.catalogoapp.consultoras.viewmodel.AuthUiState
 import com.catalogoapp.consultoras.viewmodel.AuthViewModel
 
+// Pantalla de registro de consultoras
 @Composable
-fun RegisterScreen(
+fun RegistroScreen(
     viewModel: AuthViewModel,
     onRegistroExitoso: () -> Unit,
     onIrALogin: () -> Unit
