@@ -28,7 +28,7 @@ fun RetailProductCard(producto: Producto, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .then(Modifier.clickable { onClick() }),
+            .then(Modifier.clickable { onClick() }), //toda la tarjeta es "tocable"
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),

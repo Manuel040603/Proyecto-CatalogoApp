@@ -39,7 +39,7 @@ fun CatalogoScreen(
     onProductoClick: (Producto) -> Unit,
     cantidadCarrito: Int,
     onAbrirCarrito: () -> Unit
-) {
+) { 
     val estado by viewModel.uiState.collectAsState()
     var searchQuery by remember { mutableStateOf("") }
     var analizandoFoto by remember { mutableStateOf(false) }
@@ -106,6 +106,7 @@ fun CatalogoScreen(
             BotonCarrito(cantidad = cantidadCarrito, onClick = onAbrirCarrito)
         }
 
+        // BARRA DE BÚSQUEDA: Aquí el usuario escribe el producto que desea
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },
@@ -116,6 +117,7 @@ fun CatalogoScreen(
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
             trailingIcon = {
                 Row {
+                    //  BOTÓN DE CÁMARA: Permite buscar productos tomando una foto
                     IconButton(
                         enabled = !analizandoFoto,
                         onClick = {
@@ -131,6 +133,7 @@ fun CatalogoScreen(
                             Icon(Icons.Default.PhotoCamera, contentDescription = "Buscar por foto", tint = MaterialTheme.colorScheme.primary)
                         }
                     }
+                    //  BOTÓN DEL MICRÓFONO: Abre el reconocimiento de voz de Google
                     IconButton(onClick = {
                         val intento = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
                             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
@@ -163,6 +166,8 @@ fun CatalogoScreen(
         }
 
         val categorias = viewModel.categoriasDisponibles()
+        
+        //  CHIPS DE CATEGORÍAS: Filtra los productos rápidamente por categoría
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             contentPadding = PaddingValues(bottom = 16.dp)
@@ -189,8 +194,7 @@ fun CatalogoScreen(
                     )
                 )
             }
-        }
-
+        // filtro por texto
         val filteredProducts = remember(estado.productos, searchQuery) {
             estado.productos.filter {
                 it.nombre.contains(searchQuery, ignoreCase = true) ||
@@ -199,10 +203,12 @@ fun CatalogoScreen(
         }
 
         if (filteredProducts.isEmpty()) {
+            //  MENSAJE DE VACÍO: Muestra feedback cuando la búsqueda no encuentra nada
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text("No se encontraron productos", style = MaterialTheme.typography.bodyLarge)
             }
         } else {
+            // GRILLA DE PRODUCTOS: Lista en 2 columnas usando LazyVerticalGrid
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
